@@ -134,6 +134,14 @@ static int      cur_layer_id = 1;
 static unsigned long    downloaded_bytes_2on_close = 0;
 static unsigned long    retrans_stream_id = 0;
 static unsigned long    next_stream_id = 0;
+static long double      last_stall_start_time = 0;
+
+static int      sum_stall_num = 0;
+static double   sum_stall_duration = 0;
+static double   sum_avg_quality = 0;
+static int      sum_switch_num = 0;
+static double   sum_avg_switch = 0;
+
 
 struct Seg_layers   // a stream = 1 layer
 {
@@ -180,14 +188,17 @@ minh_AGG_ABR(){
     if (minh_rebuf && minh_cur_buf >= MINH_REBUF_THRESHOLD_EXIT)    // stop rebuffering
     {
         printf("AGG ABR 1\n");
+        sum_stall_duration = (long double) (lsquic_time_now() - last_stall_start_time) / 1000; //ms
         minh_rebuf = false;
     }
 
     if (minh_cur_buf < MINH_SD || minh_rebuf) // still or start rebuffering ==> go to the next segment and choose BL
     {  
         printf("AGG ABR 2\n");
-        if (!minh_rebuf)
+        if (!minh_rebuf)    // start rebuff
         {
+            sum_stall_num++;
+            last_stall_start_time = lsquic_time_now();
             minh_rebuf = true;
             minh_cur_buf = 0;
         }
@@ -2007,7 +2018,7 @@ main (int argc, char **argv)
     }
     client_ctx.hcc_reqs_per_conn = 1000;
     printf("DUMMYNET-S\n");
-    if (system("sudo ./complex_3g.sh &")) {printf("ERROR Cannot start DummyNet\n"); exit(1);};
+    // if (system("sudo ./complex_3g.sh &")) {printf("ERROR Cannot start DummyNet\n"); exit(1);};
     printf("DUMMYNET-E\n");
 
 #if LSQUIC_CONN_STATS
@@ -2037,6 +2048,9 @@ main (int argc, char **argv)
     }
 
     streaming_start_time = lsquic_time_now();
+
+    last_stall_start_time = lsquic_time_now();
+
     was_empty = TAILQ_EMPTY(&sports);
     if (0 != prog_prep(&prog))
     {
@@ -2085,8 +2099,16 @@ main (int argc, char **argv)
     printf("=======================Streaming session status=======================\n");
     printf("StartTime\t SegID\t #Layers\t LayerID\t Bitrate\t Throughput\t Buffer\t StreamID\t DownloadTime\n");
     // for ( seg_idx = 0; seg_idx < MAX_SEGMENT_ID && segment[seg_idx].num_layers != 0; seg_idx ++)
-    for ( seg_idx = 0; seg_idx < MAX_SEGMENT_ID; seg_idx ++)
+    for ( seg_idx = 0; seg_idx <= minh_client_seg; seg_idx ++)
     {
+        sum_avg_quality += segment[seg_idx].num_layers;
+        if (seg_idx < minh_client_seg && 
+                    segment[seg_idx].num_layers > segment[seg_idx+1].num_layers)
+        {
+            sum_switch_num ++;
+            sum_avg_switch += segment[seg_idx].num_layers - segment[seg_idx+1].num_layers;
+        }
+
         for (layer_idx = 0; layer_idx < segment[seg_idx].num_layers; layer_idx ++)
         {
             if (!segment[seg_idx].layer[layer_idx].throughput){ continue;}   // in case of terminated layers
@@ -2105,16 +2127,16 @@ main (int argc, char **argv)
     }
 
     // MINH killall bash ./complex
-    if (system("sudo killall bash ./complex_3g.sh")) {printf("Killed Dummynet\n");};        
+    // if (system("sudo killall bash ./complex_3g.sh")) {printf("Killed Dummynet\n");};        
     // }
 
     // write on file
-    FILE *stats_file;
+    FILE *stats_file, *summary_file;
     stats_file = fopen("./statistics.txt", "w+");
 
     fprintf(stats_file, "StartTime\t SegID\t #Layers\t LayerID\t Bitrate\t Throughput\t Buffer\t StreamID\t DownloadTime\n");
-    // for ( seg_idx = 0; seg_idx < MAX_SEGMENT_ID && segment[seg_idx].num_layers != 0; seg_idx ++)
-    for ( seg_idx = 0; seg_idx < MAX_SEGMENT_ID; seg_idx ++)
+    for ( seg_idx = 0; seg_idx < MAX_SEGMENT_ID && segment[seg_idx].num_layers != 0; seg_idx ++)
+    // for ( seg_idx = 0; seg_idx < MAX_SEGMENT_ID; seg_idx ++)
     {
         for (layer_idx = 0; layer_idx < segment[seg_idx].num_layers; layer_idx ++)
         {
@@ -2133,6 +2155,13 @@ main (int argc, char **argv)
         }
     }
     printf("======================= Writing on files -E =======================\n");
+
+    summary_file = fopen("./summary.txt", "w+");
+    fprintf(summary_file, "- sum_avg_quality = %.2f\n", sum_avg_quality/minh_client_seg);
+    fprintf(summary_file, "- sum_switch_num = %d\n", sum_switch_num);
+    fprintf(summary_file, "- sum_avg_switch = %.2f\n", sum_avg_switch/sum_switch_num);
+    fprintf(summary_file, "- sum_stall_num = %d\n", sum_stall_num);
+    fprintf(summary_file, "- sum_stall_duration = %.3f s\n", sum_stall_duration/1000);
 
     prog_cleanup(&prog);
     if (promise_fd >= 0)
