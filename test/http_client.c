@@ -57,6 +57,8 @@
 #include "../src/liblsquic/lsquic_conn.h"
 #include "lsxpack_header.h"
 
+#include <time.h>
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -79,6 +81,7 @@ static int g_header_bypass;
 static int s_discard_response;
 
 // Minh ADD-S
+#define NUM_SEGMENTS    12
 #define MAX_SEGMENT_ID  200
 #define MAX_LAYER_ID    4   // 1 BL + 3 ELs
 #define TRUE            true
@@ -88,12 +91,51 @@ static int s_discard_response;
 //const int   MINH_SUM_BITRATE_SET[] = {1500, 3500, 7500, 12500}; //Kbps
 //char*       MINH_PATH_SET[] = {"/file-187K", "/file-250K", "/file-437K", "/file-625K"}; // MINH_SUM_BITRATE_SET/8
 
-const int   MINH_BITRATE_SET[] = {12000, 20000, 48000, 100000};   //Kbps
-const int   MINH_SUM_BITRATE_SET[] = {12000, 32000, 80000, 180000}; //Kbps
-char*       MINH_PATH_SET[] = {"/file-1500K", "/file-4000K", "/file-10000K", "/file-22500K"}; // MINH_SUM_BITRATE_SET/8
+const int   MINH_BITRATE_SET[NUM_SEGMENTS][MAX_LAYER_ID] = {
+                {795, 722, 11913, 12989},   //1
+                {935, 862, 14086, 14563},   //2
+                {1104, 1030, 16053, 15664}, //3
+                {1202, 1097, 17856, 17426}, //4
+                {1311, 1197, 19754, 19141}, //5
+                {1311, 1173, 21725, 20387}, //6
+                {1620, 1393, 25374, 21960}, //7
+                {1776, 1494, 28128, 23036}, //8
+                {1114, 886, 24485, 21019},  //9
+                {980, 604, 21491, 23210},   //10
+                {428, 427, 16399, 20120},   //11
+                {729, 480, 15460, 17380}    //12
+};   //Kbps
+const int   MINH_SUM_BITRATE_SET[NUM_SEGMENTS][MAX_LAYER_ID] = {
+                {795, 1517,    13430,   26419},
+                {935, 1797,    15883,   30446},
+                {1104,    2134,    18187,   33851},
+                {1202,    2299,    20155,   37581},
+                {1311,    2508,    22262,   41403},
+                {1311,    2484,    24209,   44596},
+                {1620,    3013,    28387,   50347},
+                {1776,    3270,    31398,   54434},
+                {1114,    2000,    26485,   47504},
+                {980, 1584,    23075,   46285},
+                {428, 855, 17254,   37374},
+                {729, 1209,    16669,   34049}
+}; //Kbps
+char*       MINH_PATH_SET[NUM_SEGMENTS][MAX_LAYER_ID] = {
+                {"/file-97K", "/file-88K",  "/file-1454K",    "/file-1586K"},       //1
+                {"/file-114K",    "/file-105K", "/file-1719K",    "/file-1778K"},  //2
+                {"/file-135K",    "/file-126K", "/file-1960K",    "/file-1912K"},  //3
+                {"/file-147K",    "/file-134K", "/file-2180K",    "/file-2127K"},  //4
+                {"/file-160K",    "/file-146K", "/file-2411K",    "/file-2337K"},  //5
+                {"/file-160K",    "/file-143K", "/file-2652K",    "/file-2489K"},  //6
+                {"/file-198K",    "/file-170K", "/file-3097K",    "/file-2681K"},  //7
+                {"/file-217K",    "/file-182K", "/file-3434K",    "/file-2812K"},  //8
+                {"/file-136K",    "/file-108K", "/file-2989K",    "/file-2566K"},  //9
+                {"/file-120K",    "/file-74K",  "/file-2623K",    "/file-2833K"},  //10
+                {"/file-52K", "/file-52K",  "/file-2002K",    "/file-2456K"},       //11
+                {"/file-89K", "/file-59K",  "/file-1887K",    "/file-2122K"}        //12
+}; // MINH_SUM_BITRATE_SET/8
 
-#define   MINH_BUFFER_SIZE          20000
-#define   MINH_REBUF_THRESHOLD_EXIT 5000
+#define   MINH_BUFFER_SIZE          15000
+#define   MINH_REBUF_THRESHOLD_EXIT 10000
 #define   MINH_SD                   1000
 
 const int   RETRANS_BUFF_TRIGGER_ON = MINH_BUFFER_SIZE/2;
@@ -123,6 +165,7 @@ static bool     minh_retrans_extension = TRUE;
 static bool     retransmitting = FALSE;
 static bool     termination_check = FALSE;
 static bool     stall_while_downloading = FALSE;
+static bool     retrans_enable = FALSE;
 
 static char*    next_path = "/file-187K";
 static char*    retrans_path;
@@ -148,6 +191,15 @@ static double   sum_avg_quality = 0;
 static int      sum_switch_num = 0;
 static double   sum_avg_switch = 0;
 
+enum ABR {AGG, CURSOR};
+static enum ABR      minh_ABR;
+
+// MINH SVC_Cursor_ABR Parameters -S
+static int      cursor_quality_cursor = 1;
+static int      cursor_segment_cursor = 0;
+static double   cursor_improvement_timer = 0;
+
+// MINH SVC_Cursor_ABR Parameters -E
 
 struct Seg_layers   // a stream = 1 layer
 {
@@ -186,8 +238,22 @@ struct lsquic_stream_ctx {
 struct Segments segment[MAX_SEGMENT_ID];
 
 static void
+delay( int milli_seconds)
+{
+    clock_t start_time = clock();
+
+    while(clock() < start_time + milli_seconds)
+        ;
+}
+
+static void
+minh_get_est_throughput(){
+    estimated_throughput = minh_throughput;
+}
+
+static void
 minh_AGG_ABR(){
-    printf("AGG ABR Starts\n");
+    printf("INVOKED %s\n", __func__);
     printf("Last seg: %d \tLast_layer_id = %d\n", minh_client_seg, cur_layer_id);
 
     if (minh_rebuf && minh_cur_buf >= MINH_REBUF_THRESHOLD_EXIT)    // stop rebuffering
@@ -225,7 +291,7 @@ minh_AGG_ABR(){
 
         cur_layer_id = 1;
         minh_client_seg ++;
-        segment[minh_client_seg].num_layers = 3; // 1
+        segment[minh_client_seg].num_layers = 1;
 
     }
     else // normal
@@ -235,35 +301,22 @@ minh_AGG_ABR(){
             minh_client_seg ++;
             cur_layer_id = 1;
             int tmp_num_layers = 1;
-            // int i;
-            // for (i = MAX_LAYER_ID; i >=1; i--){
-            //     if (MINH_SUM_BITRATE_SET[i] < estimated_throughput){
-            //         tmp_num_layers = i;
-            //         break;
-            //     }
-            // }
+            int i;
+            for (i = MAX_LAYER_ID; i >=1; i--){
+                if ( MINH_SUM_BITRATE_SET[minh_client_seg % 12][i-1] < 0.9 *estimated_throughput){
+                    tmp_num_layers = i;
+                    printf("Seg: %d \tbitrate: %d \test_thrp: %.1f\n", 
+                        minh_client_seg, MINH_SUM_BITRATE_SET[minh_client_seg % 12][i-1], 0.9 *estimated_throughput);
+                    break;
+                }
+            }
 
-            if (minh_cur_buf < MINH_BUFFER_SIZE / 4)
-            {
-                tmp_num_layers = 1;
-            }
-            else if (minh_cur_buf < MINH_BUFFER_SIZE / 2)
-            {
-                tmp_num_layers = 2;
-            }
-            else if (minh_cur_buf < MINH_BUFFER_SIZE *0.75)
-            {
-                tmp_num_layers = 3;
-            }
-            else
-            {
-                tmp_num_layers = 4;
-            }
             segment[minh_client_seg].num_layers = tmp_num_layers;
 
             if (minh_cur_buf > MINH_BUFFER_SIZE){
-                printf("======== SLEEP: cur_buf: %.1f an sleep in %f\n", minh_cur_buf, (minh_cur_buf - MINH_BUFFER_SIZE)*1000);
-                usleep((minh_cur_buf - MINH_BUFFER_SIZE)*1000);
+                printf("======== SLEEP: cur_buf: %.1f an sleep in %.1f ms\n", minh_cur_buf, (minh_cur_buf - MINH_BUFFER_SIZE+1000));
+                delay(minh_cur_buf - MINH_BUFFER_SIZE + 1000);
+                minh_cur_buf = MINH_BUFFER_SIZE-1000;
             }            
         }
         else{
@@ -273,23 +326,125 @@ minh_AGG_ABR(){
                 minh_client_seg, segment[minh_client_seg].num_layers, cur_layer_id);  
     }
 
-    segment[minh_client_seg].layer[cur_layer_id-1].bitrate = MINH_BITRATE_SET[cur_layer_id-1];
+    segment[minh_client_seg].layer[cur_layer_id-1].bitrate = MINH_BITRATE_SET[minh_client_seg % 12][cur_layer_id-1];
     // segment[minh_client_seg].layer[cur_layer_id-1].start_download_time = lsquic_time_now();
 
 
-    next_path = MINH_PATH_SET[cur_layer_id-1];
+    next_path =  MINH_PATH_SET[minh_client_seg % 12][cur_layer_id-1];
 }
+
+static void
+minh_SVC_cursor_ABR(){
+    // minh_client_seg <==> cursor_segment_cursor
+    printf("INVOKED %s\n", __func__);
+    printf("Last seg: %d \tLast_layer_id = %d\n", minh_client_seg, cur_layer_id);
+
+    if (minh_rebuf && minh_cur_buf >= MINH_REBUF_THRESHOLD_EXIT)    // stop rebuffering
+    {
+        if (minh_client_seg > MINH_REBUF_THRESHOLD_EXIT/MINH_SD)
+        {
+            sum_stall_duration += (long double)(lsquic_time_now() - streaming_start_time) / 1000 -
+                                last_stall_start_time; //ms
+            printf("stall duration so far: %.3f\n", sum_stall_duration);
+            stall_duration_before_update = 0;
+        }
+        minh_rebuf = false;
+    }
+
+    if (minh_cur_buf < MINH_SD || minh_rebuf) // still or start rebuffering ==> go to the next segment and choose BL
+    {  
+        if (!minh_rebuf)    // start rebuff
+        {
+            sum_stall_num++;
+            minh_rebuf = true;
+            minh_cur_buf = 0;
+                
+            last_stall_start_time = (long double)(lsquic_time_now() - streaming_start_time) / 1000 - stall_duration_before_update;
+            printf("Rebuffer_Start at %.3Lf\n", last_stall_start_time);
+        }
+
+        cur_layer_id = 1;
+        minh_client_seg ++;
+        segment[minh_client_seg].num_layers = 1;
+
+    }
+    else 
+    {
+        int first_buffered_segmet = cursor_segment_cursor - (int)minh_cur_buf/MINH_SD + 1;
+        static int      last_buffered_segment = 0;
+
+        double t_avai_next_layer = (cursor_segment_cursor -(last_buffered_segment+1))*MINH_SD + minh_cur_buf;
+        // segment cursor tang khi
+        if (MINH_BITRATE_SET[minh_client_seg % 12][cursor_quality_cursor-1]*MINH_SD/estimated_throughput > t_avai_next_layer ||   // time download > available time.
+                segment[last_buffered_segment].num_layers == cursor_quality_cursor)                         // num_layers ++ if a layer of corresponding segment is downloaded
+        {
+            cursor_segment_cursor ++;
+            if (MINH_BITRATE_SET[minh_client_seg % 12][cursor_quality_cursor-1]*MINH_SD/estimated_throughput > t_avai_next_layer)
+            {
+                cursor_quality_cursor = MIN(1, cursor_quality_cursor-1);    // quality cursor decreased
+                cursor_improvement_timer = 0;                             // improvement timer is reset.
+            }
+        }   
+
+        if (segment[last_buffered_segment].layer[cursor_quality_cursor-1].bitrate != 0 &&   //all lower layers are downloaded
+                cursor_improvement_timer == 0)                                           // improvement timer is timed out    
+        {
+            cursor_quality_cursor ++;
+            last_buffered_segment = first_buffered_segmet; // linh tinh thoi
+        }
+    }
+
+
+    minh_client_seg = cursor_segment_cursor;
+    next_path = MINH_PATH_SET[minh_client_seg % 12][0];
+}
+
+// static void
+// minh_SVC_backfilling_ABR(){
+//     printf("INVOKED %s\n", __func__);
+//     printf("Last seg: %d \tLast_layer_id = %d\n", minh_client_seg, cur_layer_id);
+
+//     if (minh_rebuf && minh_cur_buf >= MINH_REBUF_THRESHOLD_EXIT)    // stop rebuffering
+//     {
+//         if (minh_client_seg > MINH_REBUF_THRESHOLD_EXIT/MINH_SD)
+//         {
+//             sum_stall_duration += (long double)(lsquic_time_now() - streaming_start_time) / 1000 -
+//                                 last_stall_start_time; //ms
+//             printf("stall duration so far: %.3f\n", sum_stall_duration);
+//             stall_duration_before_update = 0;
+//         }
+//         minh_rebuf = false;
+//     }
+
+//     if (minh_cur_buf < MINH_SD || minh_rebuf) // still or start rebuffering ==> go to the next segment and choose BL
+//     {  
+//         if (!minh_rebuf)    // start rebuff
+//         {
+//             sum_stall_num++;
+//             minh_rebuf = true;
+//             minh_cur_buf = 0;
+                
+//             last_stall_start_time = (long double)(lsquic_time_now() - streaming_start_time) / 1000 - stall_duration_before_update;
+//             printf("Rebuffer_Start at %.3Lf\n", last_stall_start_time);
+//         }
+
+//         cur_layer_id = 1;
+//         minh_client_seg ++;
+//         segment[minh_client_seg].num_layers = 1;
+
+//     }
+//     else //normal
+//     {
+
+//     }
+// }
 
 static void 
 minh_retransmission_technique(){
-    // if (minh_client_seg == 4){
-    //     printf("RETRANS\n");
-    //     retrans_check = true;
-    //     set_prior_check = true;
-    // }
+    printf("INVOKED %s\n", __func__);
 
     // trigger retrans
-    if (estimated_throughput > MINH_SUM_BITRATE_SET[segment[minh_client_seg].num_layers] &&
+    if (estimated_throughput > MINH_SUM_BITRATE_SET[minh_client_seg % 12][segment[minh_client_seg].num_layers] &&
         minh_retrans_trigger == FALSE &&
         minh_client_seg > MINH_REBUF_THRESHOLD_EXIT &&
         minh_cur_buf >= RETRANS_BUFF_TRIGGER_ON)
@@ -311,6 +466,7 @@ minh_retransmission_technique(){
 
     // if retrans is ON
     if (minh_retrans_trigger){
+        printf("-------------------- RETRANS. IS ENABLE ----------------------\n");
         if (cur_layer_id == 1)  // just jump to the next segment. ??? Chi check retrans trong truong hop nay?
         { 
             // find the highest gap amplitude
@@ -354,15 +510,15 @@ minh_retransmission_technique(){
                 if(found_a_gap)
                 {
                     // tinh t^a, T^R, B^e
-                    int retrans_rate = MINH_BITRATE_SET[segment[m_retrans_seg_id].num_layers];
-                    double t_avai = (m_retrans_seg_id -(minh_client_seg-1))*MINH_SD + minh_cur_buf;
+                    int retrans_rate = MINH_BITRATE_SET[minh_client_seg % 12][segment[m_retrans_seg_id].num_layers];
+                    double t_avai = (m_retrans_seg_id -(minh_client_seg+1))*MINH_SD + minh_cur_buf;
                     double retrans_throughput = MINH_SD*retrans_rate / t_avai;
-                    double estimated_buffer = minh_cur_buf + MINH_SD*(1 - (MINH_BITRATE_SET[0] + retrans_rate)/estimated_throughput);
+                    double estimated_buffer = minh_cur_buf + MINH_SD*(1 - (MINH_BITRATE_SET[minh_client_seg % 12][0] + retrans_rate)/estimated_throughput);
                     const int THETA = MINH_BUFFER_SIZE/2;
                     if (retrans_throughput < estimated_throughput &&
                         estimated_buffer > THETA)
                     {
-                        retrans_path = MINH_PATH_SET[segment[m_retrans_seg_id].num_layers];
+                        retrans_path = MINH_PATH_SET[minh_client_seg % 12][segment[m_retrans_seg_id].num_layers];
                         double division_factor = MAX(retrans_throughput/256, 
                                                         (estimated_buffer-retrans_throughput)/256);
                         assert(division_factor != 0);
@@ -382,6 +538,10 @@ minh_retransmission_technique(){
                 }
             }
         }
+    }
+    else
+    {
+        printf("-------------------- RETRANS. IS DISABLE ----------------------\n");
     }
 }
 
@@ -453,10 +613,11 @@ minh_update_stats(lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h, int m_segm
     //                             (downloaded_bytes_2on_close-91)*8.0/m_dowload_time :
     //                             minh_throughput ;// Kbps
     minh_throughput = (downloaded_bytes_2on_close)*8.0/m_dowload_time;
-    estimated_throughput = minh_throughput;
+    
+    minh_get_est_throughput();
 
     // recorder
-    segment[m_segment_id].layer[layer_id-1].bitrate = MINH_BITRATE_SET[layer_id-1];
+    segment[m_segment_id].layer[layer_id-1].bitrate = MINH_BITRATE_SET[minh_client_seg % 12][layer_id-1];
     segment[m_segment_id].layer[layer_id-1].throughput = minh_throughput;
     segment[m_segment_id].layer[layer_id-1].download_time = m_dowload_time;  
     segment[m_segment_id].layer[layer_id-1].start_download_time = (long double) (st_h->sh_created - streaming_start_time)/1000;
@@ -1254,8 +1415,23 @@ http_client_on_close (lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h)
         minh_update_stats(stream, st_h, minh_client_seg, FALSE);
     }
 
-    minh_AGG_ABR();
-    minh_retransmission_technique();
+    // call ABR
+    if (minh_ABR == AGG)
+    {
+        minh_AGG_ABR();    
+    }
+    else if (minh_ABR == CURSOR)
+    {
+        minh_SVC_cursor_ABR();
+    }
+    
+
+    // call retransmission if enable
+    if (retrans_enable)
+    {
+        minh_retransmission_technique();    
+    }
+    
 // Minh [retransmission] ADD-E
 
     if (0 == conn_h->ch_n_reqs)
@@ -1936,7 +2112,7 @@ main (int argc, char **argv)
     prog_init(&prog, LSENG_HTTP, &sports, &http_client_if, &client_ctx);
 
     while (-1 != (opt = getopt(argc, argv, PROG_OPTS
-                                    "46Br:R:IKu:EP:M:n:w:H:p:0:q:e:hatT:b:d:"
+                                    "46Br:R:IKu:EP:M:n:w:H:p:0:q:e:hatT:b:d:A:Z"
 #ifndef WIN32
                                                                       "C:"
 #endif
@@ -2053,15 +2229,37 @@ main (int argc, char **argv)
             http_client_if.on_zero_rtt_info = http_client_on_zero_rtt_info;
             client_ctx.hcc_zero_rtt_file_name = optarg;
             break;
+// MINH [retransmission] ADD-S
+        case 'A':   // choose ABR
+            if (strcmp(optarg, "AGG") == 0)
+            {
+                minh_ABR = AGG;
+                printf("~~~ AGG ABR~~~\n");
+            }
+            else if (strcmp(optarg, "CURSOR") == 0){
+                minh_ABR = CURSOR;
+                printf("~~~ SVC_Cursor ABR~~~\n");
+            }
+            else
+            {
+                printf("No ABR available\n");
+                exit(1);
+            }
+            break;
+        // case 'z':
+        case 'Z':   // enable retransmisison
+            printf("~~~ENABLE RETRANSMISSION\n");
+            retrans_enable = TRUE;
+            break;
+// MINH [retransmission] ADD-E            
         default:
             if (0 != prog_set_opt(&prog, opt, optarg))
                 exit(1);
         }
     }
     client_ctx.hcc_reqs_per_conn = 1000;
-    printf("DUMMYNET-S\n");
+    printf("~~~DUMMYNET starts\n");
     if (system("./complex_4g.sh &")) {printf("ERROR Cannot start DummyNet\n"); exit(1);};
-    printf("DUMMYNET-E\n");
 
 #if LSQUIC_CONN_STATS
     prog.prog_api.ea_stats_fh = stats_fh;
@@ -2172,7 +2370,7 @@ main (int argc, char **argv)
 
     // write on file
     FILE *stats_file, *summary_file;
-    stats_file = fopen("./statistics.txt", "w+");
+    stats_file = fopen("./results/statistics.txt", "w+");
 
     fprintf(stats_file, "StartTime\t SegID\t #Layers\t LayerID\t Bitrate\t Throughput\t Buffer\t StreamID\t DownloadTime\n");
     for ( seg_idx = 0; seg_idx <= minh_client_seg; seg_idx ++)
@@ -2195,7 +2393,7 @@ main (int argc, char **argv)
     }
     printf("======================= Writing on files -E =======================\n");
 
-    summary_file = fopen("./summary.txt", "w+");
+    summary_file = fopen("./results/summary.txt", "w+");
     fprintf(summary_file, "- sum_avg_quality = %.2f layers out of %d layers\n", sum_avg_quality/minh_client_seg, MAX_LAYER_ID);
     fprintf(summary_file, "- sum_switch_num = %d\n", sum_switch_num);
     fprintf(summary_file, "- sum_avg_switch = %.2f\n", (sum_switch_num > 0) ? sum_avg_switch/sum_switch_num : 0);
