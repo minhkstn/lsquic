@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic/lsquic_minmax.c
+stdint.h
+-
+string.h
+-
+lsquic_minmax.h
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic/lsquic_minmax.h
+
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic/lsquic_minmax.h
+
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/unittests/test_minmax.c
+assert.h
+-
+stdint.h
+-
+string.h
+-
+lsquic_minmax.h
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/unittests/lsquic_minmax.h
+
+test/unittests/../../src/liblsquic/lsquic_minmax.h
+

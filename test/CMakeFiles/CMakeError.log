@@ -1,0 +1,179 @@
+Determining if the IP_DONTFRAG exist failed with the following output:
+Change Dir: /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_b9e10/fast"
+/usr/bin/make -f CMakeFiles/cmTC_b9e10.dir/build.make CMakeFiles/cmTC_b9e10.dir/build
+make[1]: Entering directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b9e10.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_b9e10.dir/CheckSymbolExists.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function ‘main’:
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: ‘IP_DONTFRAG’ undeclared (first use in this function); did you mean ‘IPV6_DONTFRAG’?
+   return ((int*)(&IP_DONTFRAG))[argc];
+                   ^~~~~~~~~~~
+                   IPV6_DONTFRAG
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+CMakeFiles/cmTC_b9e10.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_b9e10.dir/CheckSymbolExists.c.o' failed
+make[1]: *** [CMakeFiles/cmTC_b9e10.dir/CheckSymbolExists.c.o] Error 1
+make[1]: Leaving directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_b9e10/fast' failed
+make: *** [cmTC_b9e10/fast] Error 2
+
+File /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <netinet/in.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef IP_DONTFRAG
+  return ((int*)(&IP_DONTFRAG))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the IP_DONTFRAG exist failed with the following output:
+Change Dir: /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_880f9/fast"
+/usr/bin/make -f CMakeFiles/cmTC_880f9.dir/build.make CMakeFiles/cmTC_880f9.dir/build
+make[1]: Entering directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_880f9.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -DLSQUIC_DEBUG_NEXT_ADV_TICK=1 -Wall -Wextra -Wno-unused-parameter -fno-omit-frame-pointer -Wno-implicit-fallthrough -Wno-missing-field-initializers -O0 -g3 -Werror     -o CMakeFiles/cmTC_880f9.dir/CheckSymbolExists.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function ‘main’:
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: ‘IP_DONTFRAG’ undeclared (first use in this function); did you mean ‘IPV6_DONTFRAG’?
+   return ((int*)(&IP_DONTFRAG))[argc];
+                   ^~~~~~~~~~~
+                   IPV6_DONTFRAG
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:4:14: error: parameter ‘argc’ set but not used [-Werror=unused-but-set-parameter]
+ int main(int argc, char** argv)
+              ^~~~
+cc1: all warnings being treated as errors
+CMakeFiles/cmTC_880f9.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_880f9.dir/CheckSymbolExists.c.o' failed
+make[1]: *** [CMakeFiles/cmTC_880f9.dir/CheckSymbolExists.c.o] Error 1
+make[1]: Leaving directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_880f9/fast' failed
+make: *** [cmTC_880f9/fast] Error 2
+
+File /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <netinet/in.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef IP_DONTFRAG
+  return ((int*)(&IP_DONTFRAG))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the IP_DONTFRAG exist failed with the following output:
+Change Dir: /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_0bb27/fast"
+/usr/bin/make -f CMakeFiles/cmTC_0bb27.dir/build.make CMakeFiles/cmTC_0bb27.dir/build
+make[1]: Entering directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_0bb27.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_0bb27.dir/CheckSymbolExists.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function ‘main’:
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: ‘IP_DONTFRAG’ undeclared (first use in this function); did you mean ‘IPV6_DONTFRAG’?
+   return ((int*)(&IP_DONTFRAG))[argc];
+                   ^~~~~~~~~~~
+                   IPV6_DONTFRAG
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+CMakeFiles/cmTC_0bb27.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_0bb27.dir/CheckSymbolExists.c.o' failed
+make[1]: *** [CMakeFiles/cmTC_0bb27.dir/CheckSymbolExists.c.o] Error 1
+make[1]: Leaving directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_0bb27/fast' failed
+make: *** [cmTC_0bb27/fast] Error 2
+
+File /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <netinet/in.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef IP_DONTFRAG
+  return ((int*)(&IP_DONTFRAG))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the IP_DONTFRAG exist failed with the following output:
+Change Dir: /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_74b31/fast"
+/usr/bin/make -f CMakeFiles/cmTC_74b31.dir/build.make CMakeFiles/cmTC_74b31.dir/build
+make[1]: Entering directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_74b31.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_74b31.dir/CheckSymbolExists.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function ‘main’:
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: ‘IP_DONTFRAG’ undeclared (first use in this function); did you mean ‘IPV6_DONTFRAG’?
+   return ((int*)(&IP_DONTFRAG))[argc];
+                   ^~~~~~~~~~~
+                   IPV6_DONTFRAG
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+CMakeFiles/cmTC_74b31.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_74b31.dir/CheckSymbolExists.c.o' failed
+make[1]: *** [CMakeFiles/cmTC_74b31.dir/CheckSymbolExists.c.o] Error 1
+make[1]: Leaving directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_74b31/fast' failed
+make: *** [cmTC_74b31/fast] Error 2
+
+File /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <netinet/in.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef IP_DONTFRAG
+  return ((int*)(&IP_DONTFRAG))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the IP_DONTFRAG exist failed with the following output:
+Change Dir: /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_071e9/fast"
+/usr/bin/make -f CMakeFiles/cmTC_071e9.dir/build.make CMakeFiles/cmTC_071e9.dir/build
+make[1]: Entering directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_071e9.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_071e9.dir/CheckSymbolExists.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function ‘main’:
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: ‘IP_DONTFRAG’ undeclared (first use in this function); did you mean ‘IPV6_DONTFRAG’?
+   return ((int*)(&IP_DONTFRAG))[argc];
+                   ^~~~~~~~~~~
+                   IPV6_DONTFRAG
+/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+CMakeFiles/cmTC_071e9.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_071e9.dir/CheckSymbolExists.c.o' failed
+make[1]: *** [CMakeFiles/cmTC_071e9.dir/CheckSymbolExists.c.o] Error 1
+make[1]: Leaving directory '/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_071e9/fast' failed
+make: *** [cmTC_071e9/fast] Error 2
+
+File /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <netinet/in.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef IP_DONTFRAG
+  return ((int*)(&IP_DONTFRAG))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+

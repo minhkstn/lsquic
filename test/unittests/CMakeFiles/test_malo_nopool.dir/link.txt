@@ -1,0 +1,1 @@
+/usr/bin/cc   -DLSQUIC_DEBUG_NEXT_ADV_TICK=1 -Wall -Wextra -Wno-unused-parameter -fno-omit-frame-pointer -Wno-implicit-fallthrough -Wno-missing-field-initializers -O0 -g3 -Werror  -DLSQUIC_TEST=1 -Wno-unused-value -Wno-override-init -g  -rdynamic CMakeFiles/test_malo_nopool.dir/test_malo.c.o CMakeFiles/test_malo_nopool.dir/__/__/src/liblsquic/lsquic_malo.c.o  -o test_malo_nopool 

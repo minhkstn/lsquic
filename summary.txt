@@ -1,0 +1,5 @@
+- sum_avg_quality = 2.46
+- sum_switch_num = 0
+- sum_avg_switch = -nan
+- sum_stall_num = 0
+- sum_stall_duration = 0.132 s
