@@ -1,0 +1,10 @@
+AGG {AGG, CURSOR, BACKFILLING}: 0 	Retrans_enable: 0
+Buffer size: 20000 	Buffer exit threshold: 15000
+Start play time: 1.531 (s)
+- sum_avg_quality = 0.30 layers out of 4 layers
+- sum_switch_num = 3
+- sum_avg_switch = 1.67
+- sum_stall_num = 0
+- sum_stall_duration = 0.000 s
+- sum_retrans_num = 0
+- sum_terminate_num = 0

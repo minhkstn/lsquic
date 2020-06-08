@@ -137,7 +137,7 @@ char*       MINH_PATH_SET[NUM_SEGMENTS][MAX_LAYER_ID] = {
 const int   hung_max_seg_id_consideration = 200;
 const int   RETRANS_BUFF_TRIGGER_ON = MINH_BUFFER_SIZE/2;
 const int   RETRANS_BUFF_THRES = MINH_BUFFER_SIZE/4;
-const int   THETA = MINH_BUFFER_SIZE/2; // estimated buffer > THETA
+const int   THETA = MINH_BUFFER_SIZE/4; // estimated buffer > THETA
 
 int             retrans_seg_id_recorder [MAX_SEGMENT_ID];
 unsigned        terminate_stream_id_recorder [MAX_SEGMENT_ID];
@@ -177,7 +177,8 @@ static unsigned long    retrans_stream_id = 0;
 static unsigned long    next_stream_id = 0;
 static long double      last_stall_start_time = 0;
 static long double      stall_duration_before_update = 0;
-static  long double     last_update_time = 0;
+static long double      last_update_time = 0;
+static double           start_play_time = 0;
 
 static int      sum_stall_num = 0;
 static double   sum_stall_duration = 0;
@@ -229,14 +230,21 @@ struct lsquic_stream_ctx {
 
 struct Segments segment[MAX_SEGMENT_ID];
 
-static void
-delay( int milli_seconds)
-{
-    clock_t start_time = clock();
+// static void
+// delay( int milli_seconds)
+// {
+//     // long pause;
+//     // clock_t now,then;
 
-    while(clock() < start_time + milli_seconds)
-        ;
-}
+//     // pause = milli_seconds*(CLOCKS_PER_SEC/1000);
+//     // now = then = clock();
+//     // while( (now-then) < pause )
+//     //     now = clock();
+
+//     long double target_time = lsquic_time_now()+ milli_seconds*1000;
+//     while (lsquic_time_now() < target_time)
+//         ;
+// }
 
 static void
 minh_get_est_throughput(){
@@ -257,6 +265,11 @@ minh_AGG_ABR(){
                                 last_stall_start_time; //ms
             printf("\t\tstall duration so far: %.3f\n", sum_stall_duration);
             stall_duration_before_update = 0;
+        }
+        else if (minh_client_seg < hung_max_seg_id_consideration)
+        {
+            start_play_time = (long double)(lsquic_time_now() - streaming_start_time) / 1000;
+            printf("Start play video\n");
         }
         minh_rebuf = false;
     }
@@ -298,11 +311,12 @@ minh_AGG_ABR(){
 
             segment[minh_client_seg].num_layers = tmp_num_layers;
 
-            if (minh_cur_buf > MINH_BUFFER_SIZE){
-                printf("\t\t======== SLEEP: cur_buf: %.1f an sleep in %.1f ms\n", minh_cur_buf, (minh_cur_buf - MINH_BUFFER_SIZE+1000));
-                delay(minh_cur_buf - MINH_BUFFER_SIZE + 1000);
-                minh_cur_buf = MINH_BUFFER_SIZE-1000;   //co can phai tinh lai minh_curbuf?
-            }            
+            // if (minh_cur_buf > MINH_BUFFER_SIZE && minh_client_seg < hung_max_seg_id_consideration){
+            //     printf("\t\t======== SLEEP: cur_buf: %.1f an sleep in %.1f ms\n", minh_cur_buf, (minh_cur_buf - MINH_BUFFER_SIZE));
+            //     // usleep((minh_cur_buf - MINH_BUFFER_SIZE + 1000)*1000);
+            //     delay (minh_cur_buf - MINH_BUFFER_SIZE);
+            //     // minh_cur_buf = MINH_BUFFER_SIZE-1000;   //co can phai tinh lai minh_curbuf?
+            // }            
         }
         else{
             cur_layer_id ++;
@@ -437,7 +451,6 @@ minh_retransmission_technique(){
 
     // trigger retrans
     if (estimated_throughput > MINH_SUM_BITRATE_SET[minh_client_seg % 12][segment[minh_client_seg].num_layers-1] &&
-        minh_retrans_trigger == FALSE &&
         minh_client_seg*MINH_SD > MINH_REBUF_THRESHOLD_EXIT &&
         minh_cur_buf >= RETRANS_BUFF_TRIGGER_ON)
     {
@@ -447,6 +460,10 @@ minh_retransmission_technique(){
     else //if (minh_cur_buf < RETRANS_BUFF_THRES)
     {
         minh_retrans_trigger = FALSE;
+        // printf("--- Cannot trigger retrans: %.0f: %d: %.0f\n", 
+        //     estimated_throughput - MINH_SUM_BITRATE_SET[minh_client_seg % 12][segment[minh_client_seg].num_layers-1],
+        //     minh_client_seg*MINH_SD > MINH_REBUF_THRESHOLD_EXIT,
+        //     minh_cur_buf - RETRANS_BUFF_TRIGGER_ON);
     }
 
     // if retrans is ON
@@ -493,15 +510,12 @@ minh_retransmission_technique(){
                 if(found_a_gap && i < hung_max_seg_id_consideration)
                 {
                     // tinh t^a, T^R, B^e
-                    // printf("\tFound gap at segment id: %d\n", m_retrans_seg_id);
                     int next_all_rate = MINH_SUM_BITRATE_SET[minh_client_seg % 12][segment[minh_client_seg].num_layers-1];
                     int retrans_rate = MINH_BITRATE_SET[m_retrans_seg_id % 12][segment[m_retrans_seg_id].num_layers];
                     double t_avai = (m_retrans_seg_id -minh_client_seg)*MINH_SD + minh_cur_buf;
                     double retrans_throughput = MINH_SD*retrans_rate / t_avai;
                     double estimated_buffer = minh_cur_buf + 
                             MINH_SD*(1 - (next_all_rate + retrans_rate)/estimated_throughput);
-                    // printf("MINH-1; avai_time: %.0f, m_retrans_seg_id: %d, retrans_throughput: %.0f\n", 
-                        // t_avai, m_retrans_seg_id, retrans_throughput);
 
                     if (retrans_throughput < estimated_throughput &&
                         estimated_buffer > THETA)
@@ -525,11 +539,15 @@ minh_retransmission_technique(){
                         retrans_seg_id = m_retrans_seg_id;
                         retrans_seg_id_recorder[minh_retrans_seg] = m_retrans_seg_id;
                         retrans_num ++;
-                        printf("[RETRANS # %d] info: seg %d \tnew layer: %d \tPri_retrans: %d \tPri_next: %d\n", 
-                                            retrans_num, i, segment[m_retrans_seg_id].num_layers +1, priority_retrans, priority_next);  
+                        printf("[RETRANS # %d] info: seg %d \tnew layer: %d \tt_avai: %.0f \tPri_retrans: %d \tPri_next: %d\n", 
+                                            retrans_num, i, segment[m_retrans_seg_id].num_layers +1,t_avai, priority_retrans, priority_next);  
                         break;                      
                     }
                 }
+            }
+            if (!retrans_check)
+            {
+                printf("After sanning, cannot find any layer to retransmit\n");
             }
         }
     }
@@ -542,7 +560,7 @@ minh_retransmission_technique(){
 static void
 minh_update_stats(lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h, int m_segment_id, bool retrans_layer){
     long double m_dowload_time = (long double) (lsquic_time_now()- st_h->sh_created)/1000; //ms
-    long double m_update_diff_time = (long double)(lsquic_time_now()-last_update_time)/1000;
+    // long double m_update_diff_time = (long double)(lsquic_time_now()-last_update_time)/1000;
     int layer_id = 0;
 
     last_update_time = lsquic_time_now();
@@ -563,18 +581,21 @@ minh_update_stats(lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h, int m_segm
             segment[m_segment_id].layer[layer_id-1].stream_id = lsquic_stream_id(stream);
         }
 
-        if (minh_cur_buf - m_update_diff_time < 0)    // rebuffering before update
+        double temp_buf = minh_client_seg*MINH_SD + sum_stall_duration + start_play_time
+                                    - (long double) (lsquic_time_now() - streaming_start_time)/1000;
+
+        if (temp_buf < 0)    // rebuffering before update
         {
             stall_while_downloading = TRUE;
-            stall_duration_before_update = -(minh_cur_buf - m_dowload_time);
+            stall_duration_before_update = -temp_buf;
             minh_cur_buf = 0;
-            printf("\tRebuffering while downloading. Duration: %Lf\n", stall_duration_before_update);
+            // printf("\tRebuffering while downloading. Duration: %Lf\n", stall_duration_before_update);
         }       
         else{
-            minh_cur_buf = minh_cur_buf - m_update_diff_time;
+            minh_cur_buf = temp_buf;
         } 
 
-        printf("\t***Note: Update stats: retransmitted layer\n");
+        // printf("\t***Note: Update stats: retransmitted layer\n");
     }
     else            // this layer is current/next segment
     {
@@ -586,29 +607,44 @@ minh_update_stats(lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h, int m_segm
         }
         else if (layer_id == 1) // this is the first layer of current segment
         {
-            if (minh_cur_buf + MINH_SD - m_update_diff_time < 0)    // rebuffering before update
+            double temp_buf = (minh_client_seg+1)*MINH_SD + sum_stall_duration + start_play_time
+                                    - (long double) (lsquic_time_now() - streaming_start_time)/1000;
+            // if (minh_cur_buf + MINH_SD - m_update_diff_time < 0)    // rebuffering before update
+            if (temp_buf < 0)                                    
             {
                 stall_while_downloading = TRUE;
-                stall_duration_before_update = -(minh_cur_buf + MINH_SD - m_update_diff_time);
+                stall_duration_before_update = - temp_buf ; //(minh_cur_buf + MINH_SD - m_update_diff_time);
                 minh_cur_buf = 0;
                 printf("\tRebuffering while downloading. Duration: %.3Lf ms\n", stall_duration_before_update);
             }
             else
             {
-               minh_cur_buf = minh_cur_buf + MINH_SD - m_update_diff_time; 
+                // double minh_cur_buf_1 = minh_cur_buf + MINH_SD - m_update_diff_time; 
+                minh_cur_buf = temp_buf; //(minh_client_seg+1)*MINH_SD + sum_stall_duration + start_play_time
+                                    // - (long double) (lsquic_time_now() - streaming_start_time)/1000; //minh_cur_buf + MINH_SD - m_update_diff_time; 
+                // printf("\tDiff in 2 ways BL: %.1f: Old (%.1f) -> New (%.1f) \n", 
+                //         minh_cur_buf_1 - minh_cur_buf, minh_cur_buf_1, minh_cur_buf);
             }
         }
         else
-        {
-            if (minh_cur_buf - m_update_diff_time < 0)    // rebuffering before update
+        {   
+            double temp_buf = (minh_client_seg+1)*MINH_SD + sum_stall_duration + start_play_time
+                                    - (long double) (lsquic_time_now() - streaming_start_time)/1000;
+            // if (minh_cur_buf - m_update_diff_time < 0)    // rebuffering before update
+            if (temp_buf < 0)
             {
                 stall_while_downloading = TRUE;
-                stall_duration_before_update = -(minh_cur_buf - m_update_diff_time);
+                stall_duration_before_update = -temp_buf; //(minh_cur_buf - m_update_diff_time);
                 minh_cur_buf = 0;
-                printf("\tRebuffering while downloading. Duration: %Lf\n", stall_duration_before_update);
+                // printf("\tRebuffering while downloading. Duration: %Lf\n", stall_duration_before_update);
             }       
             else{
-                minh_cur_buf = minh_cur_buf - m_update_diff_time;
+                // minh_cur_buf = minh_cur_buf - m_update_diff_time;
+                // double minh_cur_buf_1 = minh_cur_buf - m_update_diff_time; 
+                minh_cur_buf = temp_buf; //(minh_client_seg+1)*MINH_SD + sum_stall_duration + start_play_time
+                                    // - (long double) (lsquic_time_now() - streaming_start_time)/1000; //minh_cur_buf + MINH_SD - m_update_diff_time; 
+                // printf("\tDiff in 2 ways EL: %.1f: Old (%.1f) -> New (%.1f) \n", 
+                //         minh_cur_buf_1 - minh_cur_buf, minh_cur_buf_1, minh_cur_buf);
             }     
         }
     }
@@ -1131,7 +1167,7 @@ http_client_on_new_stream (void *stream_if_ctx, lsquic_stream_t *stream)
         
         printf("path = RETRANS path: %s in stream_id: %"PRIu64"\n", st_h->path, retrans_stream_id);
         printf("\t[MINH] info: Segment %d \tLayer %d \tAt time: %.0Lf ms\n",
-                        minh_client_seg, segment[retrans_seg_id].num_layers+1, (long double)(lsquic_time_now() - streaming_start_time) / 1000); 
+                        retrans_seg_id, segment[retrans_seg_id].num_layers+1, (long double)(lsquic_time_now() - streaming_start_time) / 1000); 
         retrans_check = false;
     }
 #endif    
@@ -1325,13 +1361,15 @@ http_client_on_read (lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h)
                 if (lsquic_stream_id(stream) == retrans_stream_id)
                 {
                     double inst_buf = minh_cur_buf - (long double) (lsquic_time_now() - last_update_time)/1000;
-                    double t_avai = (retrans_seg_id -minh_client_seg)*MINH_SD + inst_buf;   // in millisecond
+                    double t_avai = retrans_seg_id*MINH_SD + sum_stall_duration + start_play_time
+                                    - (long double) (lsquic_time_now() - streaming_start_time)/1000;//(retrans_seg_id -minh_client_seg)*MINH_SD + inst_buf;   // in millisecond
                     
                     if (t_avai < 100 || inst_buf < RETRANS_BUFF_THRES)
                     {
                         printf("[MONITOR] inst_buf %.0f, t_avai %.0f\n", inst_buf, t_avai);
                         lsquic_stream_reset(stream, 0x1);
-                        printf("========================= TERMINATION STREAM ID %"PRIu64" ==============================\n", retrans_stream_id);
+                        printf("========================= TERMINATION STREAM ID %"PRIu64" = SEGMENT %d ==============================\n", 
+                                                                                retrans_stream_id, retrans_seg_id);
                         termination_check = TRUE;
                         terminate_seg_id = lsquic_stream_id(stream);
                         terminate_stream_id_recorder[terminate_num] = terminate_seg_id;
@@ -1455,11 +1493,20 @@ http_client_on_close (lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h)
     --conn_h->ch_n_cc_streams;
 
 // Minh [retransmission] ADD-S
-    if (retransmitting && !termination_check && (retrans_stream_id == stream_id))   // retransmit successfully (NO termination)
+    if (retrans_stream_id == stream_id)   // retransmit successfully (NO termination)
     {   
-        printf("RETRANSMIT SUCCESSFULLY\n");
+        if (!termination_check)
+        {
+            printf("RETRANSMIT SUCCESSFULLY\n");
+            minh_update_stats(stream, st_h, retrans_seg_id, TRUE);            
+        }
+        else
+        {
+            printf("RETRANSMIT FAILED\n");
+            termination_check = FALSE;
+        }
+
         retransmitting = FALSE;
-        minh_update_stats(stream, st_h, retrans_seg_id, TRUE);
     }
     else if (next_stream_id == stream_id)
     {
@@ -1482,10 +1529,21 @@ http_client_on_close (lsquic_stream_t *stream, lsquic_stream_ctx_t *st_h)
         }
         
         // call retransmission if enable
-        if (retrans_enable)
+        if (retrans_enable && !retransmitting)
         {
             minh_retransmission_technique();    
-        }        
+        }    
+        if (minh_cur_buf > MINH_BUFFER_SIZE && minh_client_seg < hung_max_seg_id_consideration){
+            printf("\t\t======== SLEEP: cur_buf: %.1f an sleep in %.1f ms\n", minh_cur_buf, (minh_cur_buf - MINH_BUFFER_SIZE));
+            usleep((minh_cur_buf - MINH_BUFFER_SIZE)*1000);
+            // delay (minh_cur_buf - MINH_BUFFER_SIZE);
+            // minh_cur_buf = MINH_BUFFER_SIZE-1000;   //co can phai tinh lai minh_curbuf?
+        }            
+}
+    else
+    {
+        printf("SOMETHING WRONG IN CLOSE STREAM\n");
+        exit(1);
     }
 
 
@@ -2489,6 +2547,7 @@ main (int argc, char **argv)
     summary_file = fopen("./results/summary.txt", "w+");
     fprintf(summary_file, "AGG {AGG, CURSOR, BACKFILLING}: %d \tRetrans_enable: %d\n", minh_ABR, retrans_enable);
     fprintf(summary_file, "Buffer size: %d \tBuffer exit threshold: %d\n", MINH_BUFFER_SIZE, MINH_REBUF_THRESHOLD_EXIT);
+    fprintf(summary_file, "Start play time: %.3f (s)\n", start_play_time/1000);
 
     fprintf(summary_file, "- sum_avg_quality = %.2f layers out of %d layers\n", sum_avg_quality/hung_max_seg_id_consideration, MAX_LAYER_ID);
     fprintf(summary_file, "- sum_switch_num = %d\n", sum_switch_num);
