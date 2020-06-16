@@ -1,12 +1,15 @@
 /* Copyright (c) 2017 - 2020 LiteSpeed Technologies Inc.  See LICENSE. */
 #include <assert.h>
-#include <netinet/in.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/queue.h>
-#include <sys/socket.h>
 #include <time.h>
+
+#ifndef WIN32
+#include <netinet/in.h>
+#include <sys/socket.h>
+#endif
 
 #include <openssl/aead.h>
 #include <openssl/hkdf.h>
@@ -31,7 +34,7 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-#define TOKGEN_VERSION 1
+#define TOKGEN_VERSION 2
 
 #define CRYPTER_KEY_SIZE        16
 #define SRST_MAX_PRK_SIZE       EVP_MAX_MD_SIZE
@@ -65,6 +68,8 @@ struct crypter
 };
 
 
+
+
 struct token_generator
 {
     /* We encrypt different token types using different keys. */
@@ -92,11 +97,18 @@ get_or_generate_state (struct lsquic_engine_public *enpub, time_t now,
     size_t bufsz;
     struct {
         time_t        now;
-        unsigned char buf[20];
-    } srst_ikm;
+        unsigned char buf[24];
+    }
+#if __GNUC__
+    /* This is more of a documentation note: this struct should already
+     * have a multiple-of-eight size.
+     */
+    __attribute__((packed))
+#endif
+    srst_ikm;
 
     data = shm_state;
-    sz = sizeof(shm_state);
+    sz = sizeof(*shm_state);
     s = shi->shi_lookup(ctx, TOKGEN_SHM_KEY, TOKGEN_SHM_KEY_SIZE, &data, &sz);
 
     if (s == 1)

@@ -71,9 +71,9 @@ static const struct alpn_map {
     enum lsquic_version  version;
     const unsigned char *alpn;
 } s_h3_alpns[] = {
-    {   LSQVER_ID25, (unsigned char *) "\x05h3-25",     },
     {   LSQVER_ID27, (unsigned char *) "\x05h3-27",     },
-    {   LSQVER_VERNEG, (unsigned char *) "\x05h3-27",     },
+    {   LSQVER_ID28, (unsigned char *) "\x05h3-28",     },
+    {   LSQVER_VERNEG, (unsigned char *) "\x05h3-28",     },
 };
 
 struct enc_sess_iquic;
@@ -106,7 +106,7 @@ no_sess_ticket (enum alarm_id alarm_id, void *ctx,
 
 
 typedef void (*gen_hp_mask_f)(struct enc_sess_iquic *,
-    const struct header_prot *, unsigned cliser,
+    const struct header_prot *, unsigned rw,
     const unsigned char *sample, unsigned char mask[16]);
 
 
@@ -115,11 +115,15 @@ struct header_prot
     const EVP_CIPHER   *hp_cipher;
     gen_hp_mask_f       hp_gen_mask;
     enum enc_level      hp_enc_level;
+    enum {
+        HP_CAN_READ  = 1 << 0,
+        HP_CAN_WRITE = 1 << 1,
+    }                   hp_flags;
     unsigned            hp_sz;
     unsigned char       hp_buf[2][EVP_MAX_KEY_LENGTH];
 };
 
-#define header_prot_inited(hp_) ((hp_)->hp_sz > 0)
+#define header_prot_inited(hp_, rw_) ((hp_)->hp_flags & (1 << (rw_)))
 
 
 struct crypto_ctx
@@ -177,12 +181,11 @@ derive_hp_secrets (struct header_prot *hp, const EVP_MD *md,
     const unsigned char *client_secret, const unsigned char *server_secret)
 {
     hp->hp_sz = EVP_AEAD_key_length(aead);
-    if (client_secret)
-        lsquic_qhkdf_expand(md, client_secret, secret_sz, PN_LABEL, PN_LABEL_SZ,
-            hp->hp_buf[0], hp->hp_sz);
-    if (server_secret)
-        lsquic_qhkdf_expand(md, server_secret, secret_sz, PN_LABEL, PN_LABEL_SZ,
-            hp->hp_buf[1], hp->hp_sz);
+    hp->hp_flags = HP_CAN_READ | HP_CAN_WRITE;
+    lsquic_qhkdf_expand(md, client_secret, secret_sz, PN_LABEL, PN_LABEL_SZ,
+        hp->hp_buf[0], hp->hp_sz);
+    lsquic_qhkdf_expand(md, server_secret, secret_sz, PN_LABEL, PN_LABEL_SZ,
+        hp->hp_buf[1], hp->hp_sz);
 }
 
 
@@ -221,6 +224,8 @@ struct enc_sess_iquic
     struct header_prot  *esi_hsk_hps;
     lsquic_packno_t      esi_max_packno[N_PNS];
     lsquic_cid_t         esi_odcid;
+    lsquic_cid_t         esi_rscid; /* Retry SCID */
+    lsquic_cid_t         esi_iscid; /* Initial SCID */
     unsigned             esi_key_phase;
     enum {
         ESI_INITIALIZED  = 1 << 0,
@@ -237,9 +242,10 @@ struct enc_sess_iquic
         ESI_WANT_TICKET  = 1 << 11,
         ESI_RECV_QL_BITS = 1 << 12,
         ESI_SEND_QL_BITS = 1 << 13,
+        ESI_RSCID        = 1 << 14,
+        ESI_ISCID        = 1 << 15,
+        ESI_RETRY        = 1 << 16, /* Connection was retried */
     }                    esi_flags;
-    enum evp_aead_direction_t
-                         esi_dir[2];        /* client, server */
     enum enc_level       esi_last_w;
     unsigned             esi_trasec_sz;
     char                *esi_hostname;
@@ -273,14 +279,14 @@ struct enc_sess_iquic
 
 static void
 gen_hp_mask_aes (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp, unsigned cliser,
+        const struct header_prot *hp, unsigned rw,
         const unsigned char *sample, unsigned char mask[EVP_MAX_BLOCK_LENGTH])
 {
     EVP_CIPHER_CTX hp_ctx;
     int out_len;
 
     EVP_CIPHER_CTX_init(&hp_ctx);
-    if (EVP_EncryptInit_ex(&hp_ctx, hp->hp_cipher, NULL, hp->hp_buf[cliser], 0)
+    if (EVP_EncryptInit_ex(&hp_ctx, hp->hp_cipher, NULL, hp->hp_buf[rw], 0)
         && EVP_EncryptUpdate(&hp_ctx, mask, &out_len, sample, 16))
     {
         assert(out_len >= 5);
@@ -299,7 +305,7 @@ gen_hp_mask_aes (struct enc_sess_iquic *enc_sess,
 
 static void
 gen_hp_mask_chacha20 (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp, unsigned cliser,
+        const struct header_prot *hp, unsigned rw,
         const unsigned char *sample, unsigned char mask[EVP_MAX_BLOCK_LENGTH])
 {
     const uint8_t *nonce;
@@ -312,19 +318,19 @@ gen_hp_mask_chacha20 (struct enc_sess_iquic *enc_sess,
 #endif
     nonce = sample + sizeof(counter);
     CRYPTO_chacha_20(mask, (unsigned char [5]) { 0, 0, 0, 0, 0, }, 5,
-                                        hp->hp_buf[cliser], nonce, counter);
+                                        hp->hp_buf[rw], nonce, counter);
 }
 
 
 static void
 apply_hp (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp, unsigned cliser,
+        const struct header_prot *hp,
         unsigned char *dst, unsigned packno_off, unsigned packno_len)
 {
     unsigned char mask[EVP_MAX_BLOCK_LENGTH];
     char mask_str[5 * 2 + 1];
 
-    hp->hp_gen_mask(enc_sess, hp, cliser, dst + packno_off + 4, mask);
+    hp->hp_gen_mask(enc_sess, hp, 1, dst + packno_off + 4, mask);
     LSQ_DEBUG("apply header protection using mask %s",
                                                 HEXSTR(mask, 5, mask_str));
     if (enc_sess->esi_flags & ESI_SEND_QL_BITS)
@@ -375,7 +381,7 @@ decode_packno (lsquic_packno_t max_packno, lsquic_packno_t packno,
 
 static lsquic_packno_t
 strip_hp (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp, unsigned cliser,
+        const struct header_prot *hp,
         const unsigned char *iv, unsigned char *dst, unsigned packno_off,
         unsigned *packno_len)
 {
@@ -385,7 +391,7 @@ strip_hp (struct enc_sess_iquic *enc_sess,
     unsigned char mask[EVP_MAX_BLOCK_LENGTH];
     char mask_str[5 * 2 + 1];
 
-    hp->hp_gen_mask(enc_sess, hp, cliser, iv, mask);
+    hp->hp_gen_mask(enc_sess, hp, 0, iv, mask);
     LSQ_DEBUG("strip header protection using mask %s",
                                                 HEXSTR(mask, 5, mask_str));
     if (enc_sess->esi_flags & ESI_RECV_QL_BITS)
@@ -429,9 +435,15 @@ gen_trans_params (struct enc_sess_iquic *enc_sess, unsigned char *buf,
     const struct lsquic_engine_settings *const settings =
                                     &enc_sess->esi_enpub->enp_settings;
     struct transport_params params;
+    const enum lsquic_version version = enc_sess->esi_conn->cn_version;
     int len;
 
     memset(&params, 0, sizeof(params));
+    if (version > LSQVER_ID27)
+    {
+        params.tp_initial_source_cid = *CN_SCID(enc_sess->esi_conn);
+        params.tp_set |= 1 << TPI_INITIAL_SOURCE_CID;
+    }
     if (enc_sess->esi_flags & ESI_SERVER)
     {
         const struct lsquic_conn *const lconn = enc_sess->esi_conn;
@@ -442,8 +454,8 @@ gen_trans_params (struct enc_sess_iquic *enc_sess, unsigned char *buf,
 
         if (enc_sess->esi_flags & ESI_ODCID)
         {
-            params.tp_original_cid = enc_sess->esi_odcid;
-            params.tp_set |= 1 << TPI_ORIGINAL_CONNECTION_ID;
+            params.tp_original_dest_cid = enc_sess->esi_odcid;
+            params.tp_set |= 1 << TPI_ORIGINAL_DEST_CID;
         }
 #if LSQUIC_PREFERRED_ADDR
         char addr_buf[INET6_ADDRSTRLEN + 6 /* port */ + 1];
@@ -544,10 +556,10 @@ gen_trans_params (struct enc_sess_iquic *enc_sess, unsigned char *buf,
                   |  (1 << TPI_MAX_ACK_DELAY)
                   |  (1 << TPI_ACTIVE_CONNECTION_ID_LIMIT)
                   ;
-    if (settings->es_max_packet_size_rx)
+    if (settings->es_max_udp_payload_size_rx)
     {
-        params.tp_max_packet_size = settings->es_max_packet_size_rx;
-        params.tp_set |= 1 << TPI_MAX_PACKET_SIZE;
+        params.tp_max_udp_payload_size = settings->es_max_udp_payload_size_rx;
+        params.tp_set |= 1 << TPI_MAX_UDP_PAYLOAD_SIZE;
     }
     if (!settings->es_allow_migration)
         params.tp_set |= 1 << TPI_DISABLE_ACTIVE_MIGRATION;
@@ -564,10 +576,15 @@ gen_trans_params (struct enc_sess_iquic *enc_sess, unsigned char *buf,
     if (settings->es_timestamps)
         params.tp_set |= 1 << TPI_TIMESTAMPS;
 
-    len = (enc_sess->esi_conn->cn_version == LSQVER_ID25 ? lsquic_tp_encode_id25 :
-        lsquic_tp_encode)(&params, enc_sess->esi_flags & ESI_SERVER, buf, bufsz);
+    len = (version == LSQVER_ID27 ? lsquic_tp_encode_27 : lsquic_tp_encode)(
+                        &params, enc_sess->esi_flags & ESI_SERVER, buf, bufsz);
     if (len >= 0)
+    {
+        char str[MAX_TP_STR_SZ];
         LSQ_DEBUG("generated transport parameters buffer of %d bytes", len);
+        LSQ_DEBUG("%s", ((version == LSQVER_ID27 ? lsquic_tp_to_str_27
+                        : lsquic_tp_to_str)(&params, str, sizeof(str)), str));
+    }
     else
         LSQ_WARN("cannot generate transport parameters: %d", errno);
     return len;
@@ -723,8 +740,8 @@ iquic_esfi_create_client (const char *hostname,
     enc_sess->esi_conn = lconn;
     enc_sess->esi_ver_neg = ver_neg;
 
-    enc_sess->esi_dir[0] = evp_aead_seal;
-    enc_sess->esi_dir[1] = evp_aead_open;
+    enc_sess->esi_odcid = *dcid;
+    enc_sess->esi_flags |= ESI_ODCID;
 
     LSQ_DEBUGC("created client, DCID: %"CID_FMT, CID_BITS(dcid));
     {
@@ -793,7 +810,8 @@ iquic_esfi_create_server (struct lsquic_engine_public *enpub,
                     struct lsquic_conn *lconn, const lsquic_cid_t *first_dcid,
                     void *(crypto_streams)[4],
                     const struct crypto_stream_if *cryst_if,
-                    const struct lsquic_cid *odcid)
+                    const struct lsquic_cid *odcid,
+                    const struct lsquic_cid *iscid )
 {
     struct enc_sess_iquic *enc_sess;
 
@@ -811,14 +829,13 @@ iquic_esfi_create_server (struct lsquic_engine_public *enpub,
     enc_sess->esi_enpub = enpub;
     enc_sess->esi_conn = lconn;
 
-    enc_sess->esi_dir[0] = evp_aead_open;
-    enc_sess->esi_dir[1] = evp_aead_seal;
-
     if (odcid)
     {
         enc_sess->esi_odcid = *odcid;
         enc_sess->esi_flags |= ESI_ODCID;
     }
+    enc_sess->esi_iscid = *iscid;
+    enc_sess->esi_flags |= ESI_ISCID;
 
     init_frals(enc_sess);
 
@@ -846,23 +863,31 @@ iquic_esfi_create_server (struct lsquic_engine_public *enpub,
 }
 
 
+static const char *const rw2str[] = { "read", "write", };
+
+typedef char evp_aead_enum_has_expected_values[
+    (int) evp_aead_open  == 0 && (int) evp_aead_seal == 1 ? 1 : -1];
+#define rw2dir(rw_) ((enum evp_aead_direction_t) (rw_))
+
+
+static void
+log_crypto_ctx (const struct enc_sess_iquic *enc_sess,
+                const struct crypto_ctx *ctx, const char *name, int rw)
+{
+    char hexbuf[EVP_MAX_MD_SIZE * 2 + 1];
+    LSQ_DEBUG("%s %s key: %s", name, rw2str[rw],
+        HEXSTR(ctx->yk_key_buf, ctx->yk_key_sz, hexbuf));
+    LSQ_DEBUG("%s %s iv: %s", name, rw2str[rw],
+        HEXSTR(ctx->yk_iv_buf, ctx->yk_iv_sz, hexbuf));
+}
+
+
 static void
 log_crypto_pair (const struct enc_sess_iquic *enc_sess,
                     const struct crypto_ctx_pair *pair, const char *name)
 {
-    char hexbuf[EVP_MAX_MD_SIZE * 2 + 1];
-    LSQ_DEBUG("client %s key: %s", name,
-        HEXSTR(pair->ykp_ctx[0].yk_key_buf, pair->ykp_ctx[0].yk_key_sz,
-                                                                hexbuf));
-    LSQ_DEBUG("client %s iv: %s", name,
-        HEXSTR(pair->ykp_ctx[0].yk_iv_buf, pair->ykp_ctx[0].yk_iv_sz,
-                                                                hexbuf));
-    LSQ_DEBUG("server %s key: %s", name,
-        HEXSTR(pair->ykp_ctx[1].yk_key_buf, pair->ykp_ctx[1].yk_key_sz,
-                                                                hexbuf));
-    LSQ_DEBUG("server %s iv: %s", name,
-        HEXSTR(pair->ykp_ctx[1].yk_iv_buf, pair->ykp_ctx[1].yk_iv_sz,
-                                                                hexbuf));
+    log_crypto_ctx(enc_sess, &pair->ykp_ctx[0], name, 0);
+    log_crypto_ctx(enc_sess, &pair->ykp_ctx[1], name, 1);
 }
 
 
@@ -871,9 +896,9 @@ log_hp (const struct enc_sess_iquic *enc_sess,
                     const struct header_prot *hp, const char *name)
 {
     char hexbuf[EVP_MAX_MD_SIZE * 2 + 1];
-    LSQ_DEBUG("client %s hp: %s", name,
+    LSQ_DEBUG("read %s hp: %s", name,
         HEXSTR(hp->hp_buf[0], hp->hp_sz, hexbuf));
-    LSQ_DEBUG("server %s hp: %s", name,
+    LSQ_DEBUG("write %s hp: %s", name,
         HEXSTR(hp->hp_buf[1], hp->hp_sz, hexbuf));
 }
 
@@ -887,6 +912,7 @@ setup_handshake_keys (struct enc_sess_iquic *enc_sess, const lsquic_cid_t *cid)
     struct crypto_ctx_pair *pair;
     struct header_prot *hp;
     size_t hsk_secret_sz;
+    unsigned cliser;
     unsigned char hsk_secret[EVP_MAX_MD_SIZE];
     unsigned char secret[2][SHA256_DIGEST_LENGTH];  /* client, server */
     char hexbuf[EVP_MAX_MD_SIZE * 2 + 1];
@@ -919,17 +945,22 @@ setup_handshake_keys (struct enc_sess_iquic *enc_sess, const lsquic_cid_t *cid)
 
     lsquic_qhkdf_expand(md, hsk_secret, hsk_secret_sz, CLIENT_LABEL,
                 CLIENT_LABEL_SZ, secret[0], sizeof(secret[0]));
-    LSQ_DEBUG("client handshake secret: %s",
-        HEXSTR(secret[0], sizeof(secret[0]), hexbuf));
-    if (0 != init_crypto_ctx(&pair->ykp_ctx[0], md, aead, secret[0],
-                sizeof(secret[0]), enc_sess->esi_dir[0]))
-        goto err;
     lsquic_qhkdf_expand(md, hsk_secret, hsk_secret_sz, SERVER_LABEL,
                 SERVER_LABEL_SZ, secret[1], sizeof(secret[1]));
-    LSQ_DEBUG("server handshake secret: %s",
-        HEXSTR(secret[1], sizeof(secret[1]), hexbuf));
-    if (0 != init_crypto_ctx(&pair->ykp_ctx[1], md, aead, secret[1],
-                sizeof(secret[1]), enc_sess->esi_dir[1]))
+    if (enc_sess->esi_flags & ESI_LOG_SECRETS)
+    {
+        LSQ_DEBUG("client handshake secret: %s",
+            HEXSTR(secret[0], sizeof(secret[0]), hexbuf));
+        LSQ_DEBUG("server handshake secret: %s",
+            HEXSTR(secret[1], sizeof(secret[1]), hexbuf));
+    }
+
+    cliser = !!(enc_sess->esi_flags & ESI_SERVER);
+    if (0 != init_crypto_ctx(&pair->ykp_ctx[!cliser], md, aead, secret[0],
+                sizeof(secret[0]), rw2dir(!cliser)))
+        goto err;
+    if (0 != init_crypto_ctx(&pair->ykp_ctx[cliser], md, aead, secret[1],
+                sizeof(secret[1]), rw2dir(cliser)))
         goto err;
 
     /* [draft-ietf-quic-tls-12] Section 5.6.1: AEAD_AES_128_GCM implies
@@ -938,7 +969,7 @@ setup_handshake_keys (struct enc_sess_iquic *enc_sess, const lsquic_cid_t *cid)
     hp->hp_cipher = EVP_aes_128_ecb();
     hp->hp_gen_mask = gen_hp_mask_aes;
     hp->hp_enc_level = ENC_LEV_CLEAR;
-    derive_hp_secrets(hp, md, aead, sizeof(secret[0]), secret[0], secret[1]);
+    derive_hp_secrets(hp, md, aead, sizeof(secret[0]), secret[!cliser], secret[cliser]);
 
     if (enc_sess->esi_flags & ESI_LOG_SECRETS)
     {
@@ -1019,9 +1050,15 @@ verify_server_cert_callback (SSL *ssl, uint8_t *out_alert)
         return ssl_verify_invalid;
     }
 
-    s = enc_sess->esi_enpub->enp_verify_cert(
-                                enc_sess->esi_enpub->enp_verify_ctx, chain);
-    return s == 0 ? ssl_verify_ok : ssl_verify_invalid;
+    EV_LOG_CERT_CHAIN(LSQUIC_LOG_CONN_ID, chain);
+    if (enc_sess->esi_enpub->enp_verify_cert)
+    {
+        s = enc_sess->esi_enpub->enp_verify_cert(
+                                    enc_sess->esi_enpub->enp_verify_ctx, chain);
+        return s == 0 ? ssl_verify_ok : ssl_verify_invalid;
+    }
+    else
+        return ssl_verify_ok;
 }
 
 
@@ -1302,7 +1339,9 @@ init_client (struct enc_sess_iquic *const enc_sess)
         SSL_CTX_sess_set_new_cb(ssl_ctx, iquic_new_session_cb);
     if (enc_sess->esi_enpub->enp_kli)
         SSL_CTX_set_keylog_callback(ssl_ctx, keylog_callback);
-    if (enc_sess->esi_enpub->enp_verify_cert)
+    if (enc_sess->esi_enpub->enp_verify_cert
+            || LSQ_LOG_ENABLED_EXT(LSQ_LOG_DEBUG, LSQLM_EVENT)
+            || LSQ_LOG_ENABLED_EXT(LSQ_LOG_DEBUG, LSQLM_QLOG))
         SSL_CTX_set_custom_verify(ssl_ctx, SSL_VERIFY_PEER,
             verify_server_cert_callback);
     SSL_CTX_set_early_data_enabled(ssl_ctx, 1);
@@ -1389,13 +1428,11 @@ struct crypto_params
 
 static int
 get_crypto_params (const struct enc_sess_iquic *enc_sess,
-                                                struct crypto_params *params)
+                    const SSL_CIPHER *cipher, struct crypto_params *params)
 {
-    const SSL_CIPHER *cipher;
     unsigned key_sz, iv_sz;
     uint32_t id;
 
-    cipher = SSL_get_current_cipher(enc_sess->esi_ssl);
     id = SSL_CIPHER_get_id(cipher);
 
     LSQ_DEBUG("Negotiated cipher ID is 0x%"PRIX32, id);
@@ -1445,6 +1482,9 @@ get_crypto_params (const struct enc_sess_iquic *enc_sess,
         return -1;
     }
 
+    /* FIXME: figure out why this duplicate check is here and either fix it
+     * or get rid of it.
+     */
     if (key_sz > EVP_MAX_KEY_LENGTH)
     {
         LSQ_DEBUG("PN size %u is too large", key_sz);
@@ -1462,6 +1502,7 @@ get_peer_transport_params (struct enc_sess_iquic *enc_sess)
     const uint8_t *params_buf;
     size_t bufsz;
     char *params_str;
+    const enum lsquic_version version = enc_sess->esi_conn->cn_version;
 
     SSL_get_peer_quic_transport_params(enc_sess->esi_ssl, &params_buf, &bufsz);
     if (!params_buf)
@@ -1471,8 +1512,8 @@ get_peer_transport_params (struct enc_sess_iquic *enc_sess)
     }
 
     LSQ_DEBUG("have peer transport parameters (%zu bytes)", bufsz);
-    if (0 > (enc_sess->esi_conn->cn_version == LSQVER_ID25
-                ? lsquic_tp_decode_id25 : lsquic_tp_decode)(params_buf, bufsz,
+    if (0 > (version == LSQVER_ID27 ? lsquic_tp_decode_27
+                : lsquic_tp_decode)(params_buf, bufsz,
                             !(enc_sess->esi_flags & ESI_SERVER),
                                                 trans_params))
     {
@@ -1493,29 +1534,71 @@ get_peer_transport_params (struct enc_sess_iquic *enc_sess)
         return -1;
     }
 
-    if ((enc_sess->esi_flags & (ESI_ODCID|ESI_SERVER)) == ESI_ODCID)
+    const lsquic_cid_t *const cids[LAST_TPI + 1] = {
+        [TP_CID_IDX(TPI_ORIGINAL_DEST_CID)]  = enc_sess->esi_flags & ESI_ODCID ? &enc_sess->esi_odcid : NULL,
+        [TP_CID_IDX(TPI_RETRY_SOURCE_CID)]   = enc_sess->esi_flags & ESI_RSCID ? &enc_sess->esi_rscid : NULL,
+        [TP_CID_IDX(TPI_INITIAL_SOURCE_CID)] = enc_sess->esi_flags & ESI_ISCID ? &enc_sess->esi_iscid : NULL,
+    };
+
+    unsigned must_have, must_not_have = 0;
+    if (version > LSQVER_ID27)
     {
-        if (!(trans_params->tp_set & (1 << TPI_ORIGINAL_CONNECTION_ID)))
+        must_have = 1 << TPI_INITIAL_SOURCE_CID;
+        if (enc_sess->esi_flags & ESI_SERVER)
+            must_not_have |= 1 << TPI_ORIGINAL_DEST_CID;
+        else
+            must_have |= 1 << TPI_ORIGINAL_DEST_CID;
+        if ((enc_sess->esi_flags & (ESI_RETRY|ESI_SERVER)) == ESI_RETRY)
+            must_have |= 1 << TPI_RETRY_SOURCE_CID;
+        else
+            must_not_have |= 1 << TPI_RETRY_SOURCE_CID;
+    }
+    else if ((enc_sess->esi_flags & (ESI_RETRY|ESI_SERVER)) == ESI_RETRY)
+        must_have = 1 << TPI_ORIGINAL_DEST_CID;
+    else
+        must_have = 0;
+
+    enum transport_param_id tpi;
+    for (tpi = FIRST_TP_CID; tpi <= LAST_TP_CID; ++tpi)
+    {
+        if (!(must_have & (1 << tpi)))
+            continue;
+        if (!(trans_params->tp_set & (1 << tpi)))
         {
-            LSQ_DEBUG("server did not produce original DCID (ODCID)");
+            LSQ_DEBUG("server did not produce %s", lsquic_tpi2str[tpi]);
             return -1;
         }
-        if (LSQUIC_CIDS_EQ(&enc_sess->esi_odcid,
-                                        &trans_params->tp_original_cid))
-            LSQ_DEBUG("ODCID values match");
+        if (!cids[TP_CID_IDX(tpi)])
+        {
+            LSQ_WARN("do not have CID %s for checking",
+                                                    lsquic_tpi2str[tpi]);
+            return -1;
+        }
+        if (LSQUIC_CIDS_EQ(cids[TP_CID_IDX(tpi)],
+                                &trans_params->tp_cids[TP_CID_IDX(tpi)]))
+            LSQ_DEBUG("%s values match", lsquic_tpi2str[tpi]);
         else
         {
             if (LSQ_LOG_ENABLED(LSQ_LOG_DEBUG))
             {
                 char cidbuf[2][MAX_CID_LEN * 2 + 1];
-                lsquic_cid2str(&enc_sess->esi_odcid, cidbuf[0]);
-                lsquic_cid2str(&trans_params->tp_original_cid, cidbuf[1]);
-                LSQ_DEBUG("server provided ODCID %s that does not match "
-                    "our ODCID %s", cidbuf[1], cidbuf[0]);
+                LSQ_DEBUG("server provided %s %"CID_FMT" that does not "
+                    "match ours %"CID_FMT, lsquic_tpi2str[tpi],
+                    CID_BITS_B(&trans_params->tp_cids[TP_CID_IDX(tpi)],
+                                                            cidbuf[0]),
+                    CID_BITS_B(cids[TP_CID_IDX(tpi)], cidbuf[1]));
             }
             return -1;
         }
     }
+
+    for (tpi = FIRST_TP_CID; tpi <= LAST_TP_CID; ++tpi)
+        if (must_not_have & (1 << tpi) & trans_params->tp_set)
+        {
+            LSQ_DEBUG("server transport parameters unexpectedly contain %s",
+                                        lsquic_tpi2str[tpi]);
+            return -1;
+        }
 
     if ((trans_params->tp_set & (1 << TPI_LOSS_BITS))
                             && enc_sess->esi_enpub->enp_settings.es_ql_bits)
@@ -1729,7 +1812,7 @@ iquic_esf_encrypt_packet (enc_session_t *enc_session_p,
     size_t out_sz, dst_sz;
     int header_sz;
     int ipv6;
-    unsigned packno_off, packno_len, cliser;
+    unsigned packno_off, packno_len;
     enum packnum_space pns;
     char errbuf[ERR_ERROR_STRING_BUF_LEN];
 
@@ -1737,17 +1820,16 @@ iquic_esf_encrypt_packet (enc_session_t *enc_session_p,
     /* TODO Obviously, will need more logic for 0-RTT */
     enc_level = pns2enc_level[ pns ];
 
-    cliser = !!(enc_sess->esi_flags & ESI_SERVER);
     if (enc_level == ENC_LEV_FORW)
     {
         pair = &enc_sess->esi_pairs[ enc_sess->esi_key_phase ];
-        crypto_ctx = &pair->ykp_ctx[ cliser ];
+        crypto_ctx = &pair->ykp_ctx[ 1 ];
         hp = &enc_sess->esi_hp;
     }
     else if (enc_sess->esi_hsk_pairs)
     {
         pair = &enc_sess->esi_hsk_pairs[ enc_level ];
-        crypto_ctx = &pair->ykp_ctx[ cliser ];
+        crypto_ctx = &pair->ykp_ctx[ 1 ];
         hp = &enc_sess->esi_hsk_hps[ enc_level ];
     }
     else
@@ -1836,7 +1918,7 @@ iquic_esf_encrypt_packet (enc_session_t *enc_session_p,
     const unsigned sample_off = packno_off + 4;
     assert(sample_off + IQUIC_TAG_LEN <= dst_sz);
 #endif
-    apply_hp(enc_sess, hp, cliser, dst, packno_off, packno_len);
+    apply_hp(enc_sess, hp, dst, packno_off, packno_len);
 
     packet_out->po_enc_data    = dst;
     packet_out->po_enc_data_sz = dst_sz;
@@ -1879,7 +1961,7 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
     struct crypto_ctx *crypto_ctx = NULL;
     unsigned char nonce_buf[ sizeof(crypto_ctx->yk_iv_buf) + 8 ];
     unsigned char *nonce, *begin_xor;
-    unsigned sample_off, packno_len, cliser, key_phase;
+    unsigned sample_off, packno_len, key_phase;
     enum enc_level enc_level;
     enum packnum_space pns;
     lsquic_packno_t packno;
@@ -1908,7 +1990,7 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
     else
         hp = NULL;
 
-    if (UNLIKELY(!(hp && header_prot_inited(hp))))
+    if (UNLIKELY(!(hp && header_prot_inited(hp, 0))))
     {
         LSQ_DEBUG("header protection for level %u not initialized yet",
                                                                 enc_level);
@@ -1927,10 +2009,9 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
         dec_packin = DECPI_TOO_SHORT;
         goto err;
     }
-    cliser = !(enc_sess->esi_flags & ESI_SERVER);
     memcpy(dst, packet_in->pi_data, sample_off);
     packet_in->pi_packno =
-    packno = strip_hp(enc_sess, hp, cliser,
+    packno = strip_hp(enc_sess, hp,
         packet_in->pi_data + sample_off,
         dst, packet_in->pi_header_sz, &packno_len);
 
@@ -1939,7 +2020,11 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
         key_phase = (dst[0] & 0x04) > 0;
         pair = &enc_sess->esi_pairs[ key_phase ];
         if (key_phase == enc_sess->esi_key_phase)
-            crypto_ctx = &pair->ykp_ctx[ cliser ];
+        {
+            crypto_ctx = &pair->ykp_ctx[ 0 ];
+            /* Checked by header_prot_inited() above */
+            assert(crypto_ctx->yk_flags & YK_INITED);
+        }
         else if (!is_valid_packno(
                         enc_sess->esi_pairs[enc_sess->esi_key_phase].ykp_thresh)
                 || packet_in->pi_packno
@@ -1947,7 +2032,7 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
         {
             const struct ku_label kl = select_ku_label(enc_sess);
             lsquic_qhkdf_expand(enc_sess->esi_md,
-                enc_sess->esi_traffic_secrets[cliser], enc_sess->esi_trasec_sz,
+                enc_sess->esi_traffic_secrets[0], enc_sess->esi_trasec_sz,
                 kl.str, kl.len, new_secret, enc_sess->esi_trasec_sz);
             if (enc_sess->esi_flags & ESI_LOG_SECRETS)
                 LSQ_DEBUG("key phase changed to %u, will try decrypting using "
@@ -1970,7 +2055,7 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
         }
         else
         {
-            crypto_ctx = &pair->ykp_ctx[ cliser ];
+            crypto_ctx = &pair->ykp_ctx[ 0 ];
             if (UNLIKELY(0 == (crypto_ctx->yk_flags & YK_INITED)))
             {
                 LSQ_DEBUG("supposedly older context is not initialized (key "
@@ -1985,7 +2070,7 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
         key_phase = 0;
         assert(enc_sess->esi_hsk_pairs);
         pair = &enc_sess->esi_hsk_pairs[ enc_level ];
-        crypto_ctx = &pair->ykp_ctx[ cliser ];
+        crypto_ctx = &pair->ykp_ctx[ 0 ];
         if (UNLIKELY(0 == (crypto_ctx->yk_flags & YK_INITED)))
         {
             LSQ_WARN("decrypt crypto context at level %s not initialized",
@@ -2055,21 +2140,21 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
             "keys", key_phase);
         const struct ku_label kl = select_ku_label(enc_sess);
         pair->ykp_thresh = packet_in->pi_packno;
-        pair->ykp_ctx[ cliser ] = crypto_ctx_buf;
-        memcpy(enc_sess->esi_traffic_secrets[ cliser ], new_secret,
+        pair->ykp_ctx[ 0 ] = crypto_ctx_buf;
+        memcpy(enc_sess->esi_traffic_secrets[ 0 ], new_secret,
                                                 enc_sess->esi_trasec_sz);
         lsquic_qhkdf_expand(enc_sess->esi_md,
-            enc_sess->esi_traffic_secrets[!cliser], enc_sess->esi_trasec_sz,
+            enc_sess->esi_traffic_secrets[1], enc_sess->esi_trasec_sz,
             kl.str, kl.len, new_secret, enc_sess->esi_trasec_sz);
-        memcpy(enc_sess->esi_traffic_secrets[ !cliser ], new_secret,
+        memcpy(enc_sess->esi_traffic_secrets[1], new_secret,
                                                 enc_sess->esi_trasec_sz);
-        s = init_crypto_ctx(&pair->ykp_ctx[ !cliser ], enc_sess->esi_md,
+        s = init_crypto_ctx(&pair->ykp_ctx[1], enc_sess->esi_md,
                     enc_sess->esi_aead, new_secret, enc_sess->esi_trasec_sz,
                     evp_aead_seal);
         if (s != 0)
         {
             LSQ_ERROR("could not init seal crypto ctx (key phase)");
-            cleanup_crypto_ctx(&pair->ykp_ctx[ !cliser ]);
+            cleanup_crypto_ctx(&pair->ykp_ctx[1]);
             /* This is a severe error, abort connection */
             enc_sess->esi_conn->cn_if->ci_internal_error(enc_sess->esi_conn,
                 "crypto ctx failure during key phase shift");
@@ -2231,6 +2316,21 @@ iquic_esf_zero_rtt_enabled (enc_session_t *enc_session_p)
 }
 
 
+static void
+iquic_esfi_set_iscid (enc_session_t *enc_session_p,
+                                    const struct lsquic_packet_in *packet_in)
+{
+    struct enc_sess_iquic *const enc_sess = enc_session_p;
+
+    if (!(enc_sess->esi_flags & ESI_ISCID))
+    {
+        lsquic_scid_from_packet_in(packet_in, &enc_sess->esi_iscid);
+        enc_sess->esi_flags |= ESI_ISCID;
+        LSQ_DEBUGC("set ISCID to %"CID_FMT, CID_BITS(&enc_sess->esi_iscid));
+    }
+}
+
+
 static int
 iquic_esfi_reset_dcid (enc_session_t *enc_session_p,
         const lsquic_cid_t *old_dcid, const lsquic_cid_t *new_dcid)
@@ -2239,7 +2339,8 @@ iquic_esfi_reset_dcid (enc_session_t *enc_session_p,
     struct crypto_ctx_pair *pair;
 
     enc_sess->esi_odcid = *old_dcid;
-    enc_sess->esi_flags |= ESI_ODCID;
+    enc_sess->esi_rscid = *new_dcid;
+    enc_sess->esi_flags |= ESI_ODCID|ESI_RSCID|ESI_RETRY;
 
     /* Free previous handshake keys */
     assert(enc_sess->esi_hsk_pairs);
@@ -2332,6 +2433,7 @@ const struct enc_session_funcs_iquic lsquic_enc_session_iquic_ietf_v1 =
                          = iquic_esfi_get_peer_transport_params,
     .esfi_reset_dcid     = iquic_esfi_reset_dcid,
     .esfi_init_server    = iquic_esfi_init_server,
+    .esfi_set_iscid      = iquic_esfi_set_iscid,
     .esfi_set_streams    = iquic_esfi_set_streams,
     .esfi_create_server  = iquic_esfi_create_server,
     .esfi_shake_stream   = iquic_esfi_shake_stream,
@@ -2432,20 +2534,17 @@ typedef char enums_have_the_same_value[
     (int) ssl_encryption_application == (int) ENC_LEV_FORW      ? 1 : -1];
 
 static int
-cry_sm_set_encryption_secret (SSL *ssl, enum ssl_encryption_level_t level,
-                    const uint8_t *read_secret, const uint8_t *write_secret,
-                    size_t secret_len)
+set_secret (SSL *ssl, enum ssl_encryption_level_t level,
+    const SSL_CIPHER *cipher, const uint8_t *secret, size_t secret_len, int rw)
 {
     struct enc_sess_iquic *enc_sess;
     struct crypto_ctx_pair *pair;
     struct header_prot *hp;
     struct crypto_params crypa;
-    int i;
     int have_alpn;
     const unsigned char *alpn;
     unsigned alpn_len;
     const enum enc_level enc_level = (enum enc_level) level;
-    const uint8_t *secrets[2];
     char errbuf[ERR_ERROR_STRING_BUF_LEN];
 #define hexbuf errbuf
 
@@ -2470,13 +2569,15 @@ cry_sm_set_encryption_secret (SSL *ssl, enum ssl_encryption_level_t level,
         }
     }
 
-    if (0 != get_crypto_params(enc_sess, &crypa))
+    if (0 != get_crypto_params(enc_sess, cipher, &crypa))
         return 0;
 
+/*
     if (enc_sess->esi_flags & ESI_SERVER)
         secrets[0] = read_secret, secrets[1] = write_secret;
     else
         secrets[0] = write_secret, secrets[1] = read_secret;
+        */
 
     if (enc_level < ENC_LEV_FORW)
     {
@@ -2489,39 +2590,46 @@ cry_sm_set_encryption_secret (SSL *ssl, enum ssl_encryption_level_t level,
         pair = &enc_sess->esi_pairs[0];
         hp = &enc_sess->esi_hp;
         enc_sess->esi_trasec_sz = secret_len;
-        memcpy(enc_sess->esi_traffic_secrets[0], secrets[0], secret_len);
-        memcpy(enc_sess->esi_traffic_secrets[1], secrets[1], secret_len);
+        memcpy(enc_sess->esi_traffic_secrets[rw], secret, secret_len);
         enc_sess->esi_md = crypa.md;
         enc_sess->esi_aead = crypa.aead;
     }
     pair->ykp_thresh = IQUIC_INVALID_PACKNO;
 
-    LSQ_DEBUG("set encryption for level %u", enc_level);
-    for (i = 1; i >= 0; --i)
-    {
-        if (secrets[i])
-        {
-            if (enc_sess->esi_flags & ESI_LOG_SECRETS)
-                LSQ_DEBUG("new %s secret: %s", i ? "server" : "client",
-                                    HEXSTR(secrets[i], secret_len, hexbuf));
-            if (0 != init_crypto_ctx(&pair->ykp_ctx[i], crypa.md,
-                        crypa.aead, secrets[i], secret_len, enc_sess->esi_dir[i]))
-                goto err;
-        }
-        else
-            assert(level == ssl_encryption_early_data);
-    }
+    if (enc_sess->esi_flags & ESI_LOG_SECRETS)
+        LSQ_DEBUG("set %s secret for level %u: %s", rw2str[rw], enc_level,
+                            HEXSTR(secret, secret_len, hexbuf));
+    else
+        LSQ_DEBUG("set %s for level %u", rw2str[rw], enc_level);
 
-    hp->hp_enc_level = enc_level;
-    hp->hp_cipher    = crypa.hp;
-    hp->hp_gen_mask  = crypa.gen_hp_mask;
-    derive_hp_secrets(hp, crypa.md, crypa.aead, secret_len, secrets[0],
-                                                                secrets[1]);
+    if (0 != init_crypto_ctx(&pair->ykp_ctx[rw], crypa.md,
+                crypa.aead, secret, secret_len, rw2dir(rw)))
+        goto err;
+
+    if (pair->ykp_ctx[!rw].yk_flags & YK_INITED)
+    {
+        /* Sanity check that the two sides end up with the same header
+         * protection logic, as they should.
+         */
+        assert(hp->hp_cipher   == crypa.hp);
+        assert(hp->hp_gen_mask == crypa.gen_hp_mask);
+    }
+    else
+    {
+        hp->hp_enc_level = enc_level;
+        hp->hp_cipher    = crypa.hp;
+        hp->hp_gen_mask  = crypa.gen_hp_mask;
+        hp->hp_sz        = EVP_AEAD_key_length(crypa.aead);
+    }
+    lsquic_qhkdf_expand(crypa.md, secret, secret_len, PN_LABEL, PN_LABEL_SZ,
+        hp->hp_buf[rw], hp->hp_sz);
+    hp->hp_flags |= 1 << rw;
 
     if (enc_sess->esi_flags & ESI_LOG_SECRETS)
     {
-        log_crypto_pair(enc_sess, pair, "new");
-        log_hp(enc_sess, hp, "new");
+        log_crypto_ctx(enc_sess, &pair->ykp_ctx[rw], "new", rw);
+        LSQ_DEBUG("%s hp: %s", rw2str[rw],
+                                    HEXSTR(hp->hp_buf[rw], hp->hp_sz, hexbuf));
     }
 
     return 1;
@@ -2531,6 +2639,22 @@ cry_sm_set_encryption_secret (SSL *ssl, enum ssl_encryption_level_t level,
     cleanup_crypto_ctx(&pair->ykp_ctx[1]);
     return 0;
 #undef hexbuf
+}
+
+
+static int
+cry_sm_set_read_secret (SSL *ssl, enum ssl_encryption_level_t level,
+            const SSL_CIPHER *cipher, const uint8_t *secret, size_t secret_len)
+{
+    return set_secret(ssl, level, cipher, secret, secret_len, 0);
+}
+
+
+static int
+cry_sm_set_write_secret (SSL *ssl, enum ssl_encryption_level_t level,
+            const SSL_CIPHER *cipher, const uint8_t *secret, size_t secret_len)
+{
+    return set_secret(ssl, level, cipher, secret, secret_len, 1);
 }
 
 
@@ -2631,7 +2755,8 @@ cry_sm_send_alert (SSL *ssl, enum ssl_encryption_level_t level, uint8_t alert)
 
 static const SSL_QUIC_METHOD cry_quic_method =
 {
-    .set_encryption_secrets = cry_sm_set_encryption_secret,
+    .set_read_secret        = cry_sm_set_read_secret,
+    .set_write_secret       = cry_sm_set_write_secret,
     .add_handshake_data     = cry_sm_write_message,
     .flush_flight           = cry_sm_flush_flight,
     .send_alert             = cry_sm_send_alert,

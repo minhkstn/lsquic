@@ -353,6 +353,10 @@ ietf_v1_gen_stream_frame (unsigned char *buf, size_t buf_len,
     unsigned slen, olen, dlen;
     unsigned char *p = buf + 1;
 
+#if _MSC_VER
+    obits = 0, dbits = 0;
+#endif
+
     assert(!!fin ^ !!size);
 
     /* We do not check that stream_id, offset, and size are smaller
@@ -1030,7 +1034,7 @@ ietf_v1_gen_ack_frame (unsigned char *outbuf, size_t outbuf_sz,
         rsize = range->high - range->low;
         a = vint_val2bits(gap - 1);
         b = vint_val2bits(rsize);
-        if (ecn_needs + (1 << a) + (1 << b) > AVAIL())
+        if (ecn_needs + (1 << a) + (1 << b) > (unsigned)AVAIL())
             break;
         if (addl_ack_blocks == VINT_MAX_ONE_BYTE)
         {
@@ -1055,7 +1059,7 @@ ietf_v1_gen_ack_frame (unsigned char *outbuf, size_t outbuf_sz,
 
     if (ecn_counts)
     {
-        assert(ecn_needs <= AVAIL());
+        assert(ecn_needs <= (unsigned)AVAIL());
         for (ecn = 1; ecn <= 3; ++ecn)
         {
             vint_write(p, ecn_counts[ecnmap[ecn]], bits[ecnmap[ecn]], 1 << bits[ecnmap[ecn]]);
