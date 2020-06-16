@@ -172,11 +172,11 @@ command
 ------------------------------------------------------------
 4. 	Explanation
 4.1 Server
-	/http_server -c 127.0.0.1,cert.pem,key.pem -s 127.0.0.1:1234 -L debug 2>server_m.out
+	./http_server -c 127.0.0.1,cert.pem,key.pem -s 127.0.0.1:1234 -L debug 2>server_m.out
 	./http_server -c 192.168.168.131,cert.pem,key.pem -s 192.168.168.131:1234 -o support_push=1 -L debug 2>server_m.out
 
 4.2 Client
-		./http_client -H 127.0.0.1 -s 127.0.0.1:4433 -p /file-4M -L debug 2>client_m.out
+		./http_client -H 127.0.0.1 -s 127.0.0.1:1234 -p /file-4M -L debug 2>client_m.out
 		./http_client -H 192.168.168.131 -s 192.168.168.131:1234 -p /file-200K -p /file-600K -R 2 -r 2 -w 2 -t -L debug 2>client_m.out
 
 "	-H www.example.com
