@@ -26,6 +26,10 @@
 #include <sys/queue.h>
 #include <stddef.h>
 
+#ifdef WIN32
+#include <malloc.h>
+#endif
+
 #include "fiu-local.h"
 
 #include "lsquic.h"
@@ -252,6 +256,26 @@ static int
 stream_inside_callback (const lsquic_stream_t *stream)
 {
     return stream->conn_pub->enpub->enp_flags & ENPUB_PROC;
+}
+
+
+/* This is an approximation.  If data is written or read outside of the
+ * event loop, last_prog will be somewhat out of date, but it's close
+ * enough for our purposes.
+ */
+static void
+maybe_update_last_progress (struct lsquic_stream *stream)
+{
+    if (stream->conn_pub && !lsquic_stream_is_critical(stream))
+    {
+        if (stream->conn_pub->last_prog != stream->conn_pub->last_tick)
+            LSQ_DEBUG("update last progress to %"PRIu64,
+                                            stream->conn_pub->last_tick);
+        stream->conn_pub->last_prog = stream->conn_pub->last_tick;
+#ifndef NDEBUG
+        stream->sm_last_prog = stream->conn_pub->last_tick;
+#endif
+    }
 }
 
 
@@ -572,7 +596,11 @@ lsquic_stream_destroy (lsquic_stream_t *stream)
     if (stream->sm_qflags & SMQF_SERVICE_FLAGS)
         TAILQ_REMOVE(&stream->conn_pub->service_streams, stream, next_service_stream);
     if (stream->sm_qflags & SMQF_QPACK_DEC)
-        lsquic_qdh_unref_stream(stream->conn_pub->u.ietf.qdh, stream);
+        lsquic_qdh_cancel_stream(stream->conn_pub->u.ietf.qdh, stream);
+    else if ((stream->sm_bflags & (SMBF_IETF|SMBF_USE_HEADERS))
+                                            == (SMBF_IETF|SMBF_USE_HEADERS)
+            && !(stream->stream_flags & STREAM_FIN_REACHED))
+        lsquic_qdh_cancel_stream_id(stream->conn_pub->u.ietf.qdh, stream->id);
     drop_buffered_data(stream);
     lsquic_sfcw_consume_rem(&stream->fc);
     drop_frames_in(stream);
@@ -728,6 +756,44 @@ stream_readable_http_ietf (struct lsquic_stream *stream)
             && (/* Running the filter may result in hitting FIN: */
                 (stream->stream_flags & STREAM_FIN_REACHED)
                 || stream_has_frame_at_read_offset(stream)));
+}
+
+
+static int
+maybe_switch_data_in (struct lsquic_stream *stream)
+{
+    if ((stream->sm_bflags & SMBF_AUTOSWITCH) &&
+            (stream->data_in->di_flags & DI_SWITCH_IMPL))
+    {
+        stream->data_in = stream->data_in->di_if->di_switch_impl(
+                                    stream->data_in, stream->read_offset);
+        if (!stream->data_in)
+        {
+            stream->data_in = lsquic_data_in_error_new();
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+
+/* Drain and discard any incoming data */
+static int
+stream_readable_discard (struct lsquic_stream *stream)
+{
+    struct data_frame *data_frame;
+
+    while ((data_frame = stream->data_in->di_if->di_get_frame(
+                                    stream->data_in, stream->read_offset)))
+    {
+        data_frame->df_read_off = data_frame->df_size;
+        stream->data_in->di_if->di_frame_done(stream->data_in, data_frame);
+    }
+
+    (void) maybe_switch_data_in(stream);
+
+    return 0;   /* Never readable */
 }
 
 
@@ -940,17 +1006,8 @@ lsquic_stream_frame_in (lsquic_stream_t *stream, stream_frame_t *frame)
             stream->sm_fin_off = DF_END(frame);
             maybe_finish_stream(stream);
         }
-        if ((stream->sm_bflags & SMBF_AUTOSWITCH) &&
-                (stream->data_in->di_flags & DI_SWITCH_IMPL))
-        {
-            stream->data_in = stream->data_in->di_if->di_switch_impl(
-                                        stream->data_in, stream->read_offset);
-            if (!stream->data_in)
-            {
-                stream->data_in = lsquic_data_in_error_new();
-                goto end_ok;
-            }
-        }
+        if (0 != maybe_switch_data_in(stream))
+            goto end_ok;
         if (got_next_offset)
             /* Checking the offset saves di_get_frame() call */
             maybe_conn_to_tickable_if_readable(stream);
@@ -1277,15 +1334,7 @@ stream_consumed_bytes (struct lsquic_stream *stream)
 }
 
 
-struct read_frames_status
-{
-    int     error;
-    int     processed_frames;
-    size_t  total_nread;
-};
-
-
-static struct read_frames_status
+static ssize_t
 read_data_frames (struct lsquic_stream *stream, int do_filtering,
         size_t (*readf)(void *, const unsigned char *, size_t, int), void *ctx)
 {
@@ -1328,17 +1377,8 @@ read_data_frames (struct lsquic_stream *stream, int do_filtering,
                 const int fin = data_frame->df_fin;
                 stream->data_in->di_if->di_frame_done(stream->data_in, data_frame);
                 data_frame = NULL;
-                if ((stream->sm_bflags & SMBF_AUTOSWITCH) &&
-                        (stream->data_in->di_flags & DI_SWITCH_IMPL))
-                {
-                    stream->data_in = stream->data_in->di_if->di_switch_impl(
-                                                stream->data_in, stream->read_offset);
-                    if (!stream->data_in)
-                    {
-                        stream->data_in = lsquic_data_in_error_new();
-                        return (struct read_frames_status) { .error = 1, };
-                    }
-                }
+                if (0 != maybe_switch_data_in(stream))
+                    return -1;
                 if (fin)
                 {
                     stream->stream_flags |= STREAM_FIN_REACHED;
@@ -1357,11 +1397,7 @@ read_data_frames (struct lsquic_stream *stream, int do_filtering,
     if (processed_frames)
         stream_consumed_bytes(stream);
 
-    return (struct read_frames_status) {
-        .error = 0,
-        .processed_frames = processed_frames,
-        .total_nread = total_nread,
-    };
+    return total_nread;
 }
 
 
@@ -1369,8 +1405,8 @@ static ssize_t
 stream_readf (struct lsquic_stream *stream,
         size_t (*readf)(void *, const unsigned char *, size_t, int), void *ctx)
 {
-    size_t total_nread, nread;
-    int read_unc_headers;
+    size_t total_nread;
+    ssize_t nread;
 
     total_nread = 0;
 
@@ -1400,9 +1436,7 @@ stream_readf (struct lsquic_stream *stream,
     {
         if (stream->uh->uh_flags & UH_H1H)
         {
-            nread = read_uh(stream, readf, ctx);
-            read_unc_headers = nread > 0;
-            total_nread += nread;
+            total_nread += read_uh(stream, readf, ctx);
             if (stream->uh)
                 return total_nread;
         }
@@ -1419,25 +1453,22 @@ stream_readf (struct lsquic_stream *stream,
         errno = EWOULDBLOCK;
         return -1;
     }
-    else
-        read_unc_headers = 0;
 
-    const struct read_frames_status rfs
-                        = read_data_frames(stream, 1, readf, ctx);
-    if (rfs.error)
-        return -1;
-    total_nread += rfs.total_nread;
+    nread = read_data_frames(stream, 1, readf, ctx);
+    if (nread < 0)
+        return nread;
+    total_nread += (size_t) nread;
 
-    LSQ_DEBUG("%s: read %zd bytes, read offset %"PRIu64, __func__,
-                                        total_nread, stream->read_offset);
+    LSQ_DEBUG("%s: read %zd bytes, read offset %"PRIu64", reached fin: %d",
+        __func__, total_nread, stream->read_offset,
+        !!(stream->stream_flags & STREAM_FIN_REACHED));
 
-    if (rfs.processed_frames || read_unc_headers)
-    {
+    if (total_nread)
         return total_nread;
-    }
+    else if (stream->stream_flags & STREAM_FIN_REACHED)
+        return 0;
     else
     {
-        assert(0 == total_nread);
         errno = EWOULDBLOCK;
         return -1;
     }
@@ -1450,6 +1481,8 @@ ssize_t
 lsquic_stream_readf (struct lsquic_stream *stream,
         size_t (*readf)(void *, const unsigned char *, size_t, int), void *ctx)
 {
+    ssize_t nread;
+
     SM_HISTORY_APPEND(stream, SHE_USER_READ);
 
     if (lsquic_stream_is_reset(stream))
@@ -1475,7 +1508,11 @@ lsquic_stream_readf (struct lsquic_stream *stream,
            return 0;
     }
 
-    return stream_readf(stream, readf, ctx);
+    nread = stream_readf(stream, readf, ctx);
+    if (nread >= 0)
+        maybe_update_last_progress(stream);
+
+    return nread;
 }
 
 
@@ -1543,6 +1580,7 @@ stream_shutdown_read (lsquic_stream_t *stream)
     {
         SM_HISTORY_APPEND(stream, SHE_SHUTDOWN_READ);
         stream->stream_flags |= STREAM_U_READ_DONE;
+        stream->sm_readable = stream_readable_discard;
         stream_wantread(stream, 0);
         maybe_finish_stream(stream);
     }
@@ -2734,6 +2772,9 @@ verify_conn_cap (const struct lsquic_conn_public *conn_pub)
     struct lsquic_hash_elem *el;
     unsigned n_buffered;
 
+    if (conn_pub->wtp_level > 1)
+        return;
+
     if (!conn_pub->all_streams)
         /* TODO: enable this check for unit tests as well */
         return;
@@ -2749,6 +2790,7 @@ verify_conn_cap (const struct lsquic_conn_public *conn_pub)
 
     assert(n_buffered + conn_pub->stream_frame_bytes
                                             == conn_pub->conn_cap.cc_sent);
+    LSQ_DEBUG("%s: cc_sent: %"PRIu64, __func__, conn_pub->conn_cap.cc_sent);
 }
 
 
@@ -3045,6 +3087,10 @@ stream_write_to_packets (lsquic_stream_t *stream, struct lsquic_reader *reader,
         .fgc_nread_from_reader = 0,
     };
 
+#if LSQUIC_EXTRA_CHECKS
+    if (stream->conn_pub)
+        ++stream->conn_pub->wtp_level;
+#endif
     use_framing = (stream->sm_bflags & (SMBF_IETF|SMBF_USE_HEADERS))
                                        == (SMBF_IETF|SMBF_USE_HEADERS);
     if (use_framing)
@@ -3068,7 +3114,10 @@ stream_write_to_packets (lsquic_stream_t *stream, struct lsquic_reader *reader,
         {
         case SWTP_OK:
             if (!seen_ok++)
+            {
                 maybe_conn_to_tickable_if_writeable(stream, 0);
+                maybe_update_last_progress(stream);
+            }
             if (fg_ctx.fgc_fin(&fg_ctx))
             {
                 if (use_framing && seen_ok)
@@ -3086,7 +3135,7 @@ stream_write_to_packets (lsquic_stream_t *stream, struct lsquic_reader *reader,
         default:
             abort_connection(stream);
             stream->stream_flags &= ~STREAM_LAST_WRITE_OK;
-            return -1;
+            goto err;
         }
     }
 
@@ -3102,7 +3151,7 @@ stream_write_to_packets (lsquic_stream_t *stream, struct lsquic_reader *reader,
         {
             nw = save_to_buffer(stream, reader, size);
             if (nw < 0)
-                return -1;
+                goto err;
             fg_ctx.fgc_nread_from_reader += nw; /* Make this cleaner? */
         }
     }
@@ -3118,7 +3167,18 @@ stream_write_to_packets (lsquic_stream_t *stream, struct lsquic_reader *reader,
     maybe_mark_as_blocked(stream);
 
   end:
+#if LSQUIC_EXTRA_CHECKS
+    if (stream->conn_pub)
+        --stream->conn_pub->wtp_level;
+#endif
     return fg_ctx.fgc_nread_from_reader;
+
+  err:
+#if LSQUIC_EXTRA_CHECKS
+    if (stream->conn_pub)
+        --stream->conn_pub->wtp_level;
+#endif
+    return -1;
 }
 
 
@@ -3166,6 +3226,10 @@ update_buffered_hq_frames (struct lsquic_stream *stream, size_t len,
     uint64_t cur_off, end;
     size_t frame_sz;
     unsigned extendable;
+#if _MSC_VER
+    end = 0;
+    extendable = 0;
+#endif
 
     cur_off = stream->sm_payload + stream->sm_n_buffered;
     STAILQ_FOREACH(shf, &stream->sm_hq_frames, shf_next)
@@ -3430,7 +3494,15 @@ send_headers_ietf (struct lsquic_stream *stream,
     ssize_t nw;
     unsigned char *header_block;
     enum lsqpack_enc_header_flags hflags;
-    unsigned char buf[max_push_size + max_prefix_size + MAX_HEADERS_SIZE];
+    int rv;
+    const size_t buf_sz = max_push_size + max_prefix_size + MAX_HEADERS_SIZE;
+#ifndef WIN32
+    unsigned char buf[buf_sz];
+#else
+    unsigned char *buf = _malloca(buf_sz);
+    if (!buf)
+        return -1;
+#endif
 
     stream->stream_flags &= ~STREAM_PUSHING;
     stream->stream_flags |= STREAM_NOPUSH;
@@ -3439,7 +3511,7 @@ send_headers_ietf (struct lsquic_stream *stream,
      * back to a larger buffer if that fails.
      */
     prefix_sz = max_prefix_size;
-    headers_sz = sizeof(buf) - max_prefix_size - max_push_size;
+    headers_sz = buf_sz - max_prefix_size - max_push_size;
     qwh = lsquic_qeh_write_headers(stream->conn_pub->u.ietf.qeh, stream->id, 0,
                 headers, buf + max_push_size + max_prefix_size, &prefix_sz,
                 &headers_sz, &stream->sm_hb_compl, &hflags);
@@ -3450,7 +3522,7 @@ send_headers_ietf (struct lsquic_stream *stream,
             LSQ_INFO("not enough room for header block");
         else
             LSQ_WARN("internal error encoding and sending HTTP headers");
-        return -1;
+        goto err;
     }
 
     if (hflags & LSQECH_REF_NEW_ENTRIES)
@@ -3464,7 +3536,7 @@ send_headers_ietf (struct lsquic_stream *stream,
         if (!stream_activate_hq_frame(stream,
                 stream->sm_payload + stream->sm_n_buffered, HQFT_PUSH_PREAMBLE,
                 SHF_FIXED_SIZE|SHF_PHANTOM, push_sz))
-            return -1;
+            goto err;
         buf[max_push_size + max_prefix_size - prefix_sz - push_sz] = HQUST_PUSH;
         vint_write(buf + max_push_size + max_prefix_size - prefix_sz
                     - push_sz + 1,stream->sm_promise->pp_id, bits, 1 << bits);
@@ -3478,7 +3550,7 @@ send_headers_ietf (struct lsquic_stream *stream,
     if (!stream_activate_hq_frame(stream,
                 stream->sm_payload + stream->sm_n_buffered + push_sz,
                 HQFT_HEADERS, SHF_FIXED_SIZE, hblock_sz - push_sz))
-        return -1;
+        goto err;
 
     if (qwh == QWH_FULL)
     {
@@ -3489,14 +3561,14 @@ send_headers_ietf (struct lsquic_stream *stream,
             if (nw < 0)
             {
                 LSQ_WARN("cannot write to stream: %s", strerror(errno));
-                return -1;
+                goto err;
             }
             if ((size_t) nw == hblock_sz)
             {
                 stream->stream_flags |= STREAM_HEADERS_SENT;
                 stream_hblock_sent(stream);
                 LSQ_DEBUG("wrote all %zu bytes of header block", hblock_sz);
-                return 0;
+                goto end;
             }
             LSQ_DEBUG("wrote only %zd bytes of header block, stash", nw);
         }
@@ -3521,14 +3593,25 @@ send_headers_ietf (struct lsquic_stream *stream,
     {
         LSQ_WARN("cannot allocate %zd bytes to stash %s header block",
             hblock_sz - (size_t) nw, qwh == QWH_FULL ? "full" : "partial");
-        return -1;
+        goto err;
     }
     memcpy(stream->sm_header_block, header_block + (size_t) nw,
                                                 hblock_sz - (size_t) nw);
     stream->sm_hblock_sz = hblock_sz - (size_t) nw;
     stream->sm_hblock_off = 0;
     LSQ_DEBUG("stashed %u bytes of header block", stream->sm_hblock_sz);
-    return 0;
+
+  end:
+    rv = 0;
+  clean:
+#ifdef WIN32
+    _freea(buf);
+#endif
+    return rv;
+
+  err:
+    rv = -1;
+    goto clean;
 }
 
 
@@ -4022,6 +4105,7 @@ lsquic_stream_get_hset (struct lsquic_stream *stream)
         stream->stream_flags |= STREAM_FIN_REACHED;
         SM_HISTORY_APPEND(stream, SHE_REACH_FIN);
     }
+    maybe_update_last_progress(stream);
     LSQ_DEBUG("return header set");
     return hset;
 }
@@ -4057,6 +4141,7 @@ update_type_hist_and_check (const struct lsquic_stream *stream,
         0123,   /* HD+  */
         012,    /* HD   */
         01,     /* H    */
+        013,    /* H+   */ /* Really HH, but we don't record it like this */
         01231,  /* HD+H */
         0121,   /* HDH  */
     };
@@ -4314,12 +4399,15 @@ hq_read (void *ctx, const unsigned char *buf, size_t sz, int fin)
         LSQ_INFO("FIN at unexpected place in filter; state: %u",
                                                         filter->hqfi_state);
         filter->hqfi_flags |= HQFI_FLAG_ERROR;
-/* From [draft-ietf-quic-http-16] Section 3.1:
- *               When a stream terminates cleanly, if the last frame on
- * the stream was truncated, this MUST be treated as a connection error
- * (see HTTP_MALFORMED_FRAME in Section 8.1).
+/* From [draft-ietf-quic-http-28] Section 7.1:
+ " When a stream terminates cleanly, if the last frame on the stream was
+ " truncated, this MUST be treated as a connection error (Section 8) of
+ " type H3_FRAME_ERROR.  Streams which terminate abruptly may be reset
+ " at any point in a frame.
  */
-        abort_connection(stream);
+        lconn = stream->conn_pub->lconn;
+        lconn->cn_if->ci_abort_error(lconn, 1, HEC_FRAME_ERROR,
+            "last HTTP/3 frame on stream %"PRIu64" was truncated", stream->id);
     }
 
     return p - buf;
@@ -4344,17 +4432,17 @@ static int
 hq_filter_readable (struct lsquic_stream *stream)
 {
     struct hq_filter *const filter = &stream->sm_hq_filter;
-    struct read_frames_status rfs;
+    ssize_t nread;
 
     if (filter->hqfi_flags & HQFI_FLAG_BLOCKED)
         return 0;
 
     if (!hq_filter_readable_now(stream))
     {
-        rfs = read_data_frames(stream, 0, hq_read, stream);
-        if (rfs.total_nread == 0)
+        nread = read_data_frames(stream, 0, hq_read, stream);
+        if (nread <= 0)
         {
-            if (rfs.error)
+            if (nread < 0)
             {
                 filter->hqfi_flags |= HQFI_FLAG_ERROR;
                 abort_connection(stream);   /* XXX Overkill? */
@@ -4554,7 +4642,7 @@ pp_reader_read (void *lsqr_ctx, void *buf, size_t count)
 {
     struct push_promise *const promise = lsqr_ctx;
     unsigned char *dst = buf;
-    unsigned char *const end = buf + count;
+    unsigned char *const end = dst + count;
     size_t len;
 
     while (dst < end)

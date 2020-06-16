@@ -112,6 +112,7 @@ enum full_conn_flags {
     FC_ABORT_COMPLAINED
                       = (1 <<23),
     FC_GOT_SREJ       = (1 <<24),   /* Don't schedule ACK alarm */
+    FC_NOPROG_TIMEOUT = (1 <<25),
 };
 
 #define FC_IMMEDIATE_CLOSE_FLAGS \
@@ -686,6 +687,8 @@ new_conn_common (lsquic_cid_t cid, struct lsquic_engine_public *enpub,
     if (conn->fc_settings->es_support_push)
         conn->fc_flags |= FC_SUPPORT_PUSH;
     conn->fc_conn.cn_n_cces = sizeof(conn->fc_cces) / sizeof(conn->fc_cces[0]);
+    if (conn->fc_settings->es_noprogress_timeout)
+        conn->fc_flags |= FC_NOPROG_TIMEOUT;
     return conn;
 
   cleanup_on_error:
@@ -1402,6 +1405,21 @@ find_stream_by_id (struct full_conn *conn, lsquic_stream_id_t stream_id)
     el = lsquic_hash_find(conn->fc_pub.all_streams, &stream_id, sizeof(stream_id));
     if (el)
         return lsquic_hashelem_getdata(el);
+    else
+        return NULL;
+}
+
+
+static struct lsquic_stream *
+full_conn_ci_get_stream_by_id (struct lsquic_conn *lconn,
+                               lsquic_stream_id_t stream_id)
+{
+    struct full_conn *conn = (struct full_conn *) lconn;
+    struct lsquic_stream *stream;
+
+    stream = find_stream_by_id(conn, stream_id);
+    if (stream && !lsquic_stream_is_closed(stream))
+        return stream;
     else
         return NULL;
 }
@@ -2466,9 +2484,22 @@ idle_alarm_expired (enum alarm_id al_id, void *ctx, lsquic_time_t expiry,
                                                             lsquic_time_t now)
 {
     struct full_conn *conn = ctx;
-    LSQ_DEBUG("connection timed out");
-    EV_LOG_CONN_EVENT(LSQUIC_LOG_CONN_ID, "connection timed out");
-    conn->fc_flags |= FC_TIMED_OUT;
+
+    if ((conn->fc_flags & FC_NOPROG_TIMEOUT)
+        && conn->fc_pub.last_prog + conn->fc_enpub->enp_noprog_timeout < now)
+    {
+        LSQ_DEBUG("connection timed out due to lack of progress");
+        EV_LOG_CONN_EVENT(LSQUIC_LOG_CONN_ID, "connection timed out due to "
+                                                            "lack of progress");
+        /* Different flag so that CONNECTION_CLOSE frame is sent */
+        conn->fc_flags |= FC_ABORTED;
+    }
+    else
+    {
+        LSQ_DEBUG("connection timed out");
+        EV_LOG_CONN_EVENT(LSQUIC_LOG_CONN_ID, "connection timed out");
+        conn->fc_flags |= FC_TIMED_OUT;
+    }
 }
 
 
@@ -3230,6 +3261,31 @@ full_conn_ci_can_write_ack (struct lsquic_conn *lconn)
 }
 
 
+/* This should be called before lsquic_alarmset_ring_expired() */
+static void
+maybe_set_noprogress_alarm (struct full_conn *conn, lsquic_time_t now)
+{
+    lsquic_time_t exp;
+
+    if (conn->fc_flags & FC_NOPROG_TIMEOUT)
+    {
+        if (conn->fc_pub.last_tick)
+        {
+            exp = conn->fc_pub.last_prog + conn->fc_enpub->enp_noprog_timeout;
+            if (!lsquic_alarmset_is_set(&conn->fc_alset, AL_IDLE)
+                                    || exp < conn->fc_alset.as_expiry[AL_IDLE])
+                lsquic_alarmset_set(&conn->fc_alset, AL_IDLE, exp);
+            conn->fc_pub.last_tick = now;
+        }
+        else
+        {
+            conn->fc_pub.last_tick = now;
+            conn->fc_pub.last_prog = now;
+        }
+    }
+}
+
+
 static enum tick_st
 full_conn_ci_tick (lsquic_conn_t *lconn, lsquic_time_t now)
 {
@@ -3283,6 +3339,8 @@ full_conn_ci_tick (lsquic_conn_t *lconn, lsquic_time_t now)
             process_ack(conn, &conn->fc_ack, conn->fc_saved_ack_received, now);
         conn->fc_flags &= ~FC_HAVE_SAVED_ACK;
     }
+
+    maybe_set_noprogress_alarm(conn, now);
 
     lsquic_send_ctl_tick_in(&conn->fc_send_ctl, now);
     lsquic_send_ctl_set_buffer_stream_packets(&conn->fc_send_ctl, 1);
@@ -3509,6 +3567,20 @@ full_conn_ci_tick (lsquic_conn_t *lconn, lsquic_time_t now)
 
 
 static void
+set_earliest_idle_alarm (struct full_conn *conn, lsquic_time_t idle_conn_to)
+{
+    lsquic_time_t exp;
+
+    if (conn->fc_pub.last_prog
+        && (assert(conn->fc_flags & FC_NOPROG_TIMEOUT),
+            exp = conn->fc_pub.last_prog + conn->fc_enpub->enp_noprog_timeout,
+            exp < idle_conn_to))
+        idle_conn_to = exp;
+    lsquic_alarmset_set(&conn->fc_alset, AL_IDLE, idle_conn_to);
+}
+
+
+static void
 full_conn_ci_packet_in (lsquic_conn_t *lconn, lsquic_packet_in_t *packet_in)
 {
     struct full_conn *conn = (struct full_conn *) lconn;
@@ -3516,7 +3588,7 @@ full_conn_ci_packet_in (lsquic_conn_t *lconn, lsquic_packet_in_t *packet_in)
 #if LSQUIC_CONN_STATS
     conn->fc_stats.in.bytes += packet_in->pi_data_sz;
 #endif
-    lsquic_alarmset_set(&conn->fc_alset, AL_IDLE,
+    set_earliest_idle_alarm(conn,
                 packet_in->pi_received + conn->fc_settings->es_idle_conn_to);
     if (0 == (conn->fc_flags & FC_ERROR))
         if (0 != process_incoming_packet(conn, packet_in))
@@ -4327,6 +4399,7 @@ static const struct conn_iface full_conn_iface = {
     .ci_close                =  full_conn_ci_close,
     .ci_destroy              =  full_conn_ci_destroy,
     .ci_get_ctx              =  full_conn_ci_get_ctx,
+    .ci_get_stream_by_id     =  full_conn_ci_get_stream_by_id,
     .ci_get_engine           =  full_conn_ci_get_engine,
     .ci_get_path             =  full_conn_ci_get_path,
 #if LSQUIC_CONN_STATS

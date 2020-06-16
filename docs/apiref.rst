@@ -46,13 +46,13 @@ developed by the IETF.  Both types are included in a single enum:
 
         Google QUIC version Q050
 
-    .. member:: LSQVER_ID25
-
-        IETF QUIC version ID (Internet-Draft) 25
-
     .. member:: LSQVER_ID27
 
-        IETF QUIC version ID 27
+        IETF QUIC version ID (Internet-Draft) 27
+
+    .. member:: LSQVER_ID28
+
+        IETF QUIC version ID 28
 
     .. member:: N_LSQVER
 
@@ -693,7 +693,7 @@ settings structure:
 
        Default value is @ref LSQUIC_DF_TIMESTAMPS
 
-    .. member:: unsigned short  es_max_packet_size_rx
+    .. member:: unsigned short  es_max_udp_payload_size_rx
 
        Maximum packet size we are willing to receive.  This is sent to
        peer in transport parameters: the library does not enforce this
@@ -701,7 +701,20 @@ settings structure:
 
        If set to zero, limit is not set.
 
-       Default value is :macro:`LSQUIC_DF_MAX_PACKET_SIZE_RX`
+       Default value is :macro:`LSQUIC_DF_MAX_UDP_PAYLOAD_SIZE_RX`
+
+    .. member:: unsigned        es_noprogress_timeout
+
+       No progress timeout.
+
+       If connection does not make progress for this number of seconds, the
+       connection is dropped.  Here, progress is defined as user streams
+       being written to or read from.
+
+       If this value is zero, this timeout is disabled.
+
+       Default value is :macro:`LSQUIC_DF_NOPROGRESS_TIMEOUT_SERVER` in server
+       mode and :macro:`LSQUIC_DF_NOPROGRESS_TIMEOUT_CLIENT` in client mode.
 
 To initialize the settings structure to library defaults, use the following
 convenience function:
@@ -877,9 +890,17 @@ out of date.  Please check your :file:`lsquic.h` for actual values.*
 
     Delayed ACKs are off by default.
 
-.. macro:: LSQUIC_DF_MAX_PACKET_SIZE_RX
+.. macro:: LSQUIC_DF_MAX_UDP_PAYLOAD_SIZE_RX
 
     By default, incoming packet size is not limited.
+
+.. macro:: LSQUIC_DF_NOPROGRESS_TIMEOUT_SERVER
+
+    By default, drop no-progress connections after 60 seconds on the server.
+
+.. macro:: LSQUIC_DF_NOPROGRESS_TIMEOUT_CLIENT
+
+    By default, do not use no-progress timeout on the client.
 
 Receiving Packets
 -----------------
@@ -1099,7 +1120,7 @@ callback.
 
 In client mode, a new connection is created by
 
-.. function:: lsquic_conn_t * lsquic_engine_connect (lsquic_engine_t *engine, enum lsquic_version version, const struct sockaddr *local_sa, const struct sockaddr *peer_sa, void *peer_ctx, lsquic_conn_ctx_t *conn_ctx, const char *sni, unsigned short max_packet_size, const unsigned char *zero_rtt, size_t zero_rtt_len, const unsigned char *token, size_t token_sz)
+.. function:: lsquic_conn_t * lsquic_engine_connect (lsquic_engine_t *engine, enum lsquic_version version, const struct sockaddr *local_sa, const struct sockaddr *peer_sa, void *peer_ctx, lsquic_conn_ctx_t *conn_ctx, const char *sni, unsigned short max_udp_payload_size, const unsigned char *zero_rtt, size_t zero_rtt_len, const unsigned char *token, size_t token_sz)
 
     :param engine: Engine to use.
 
@@ -1132,7 +1153,7 @@ In client mode, a new connection is created by
         The SNI is required for Google QUIC connections; it is optional for
         IETF QUIC and may be set to NULL.
 
-    :param max_packet_size:
+    :param max_udp_payload_size:
 
         Maximum packet size.  If set to zero, it is inferred based on `peer_sa`
         and `version`.
@@ -1168,11 +1189,7 @@ Closing Connections
     Mark connection as going away: send GOAWAY frame and do not accept
     any more incoming streams, nor generate streams of our own.
 
-    In the server mode, of course, we can call this function just fine in both
-    Google and IETF QUIC.
-
-    In client mode, calling this function in for an IETF QUIC connection does
-    not do anything, as the client MUST NOT send GOAWAY frames.
+    Only applicable to HTTP/3 and GQUIC connections.  Otherwise a no-op.
 
 .. function:: void lsquic_conn_close (lsquic_conn_t *conn)
 
@@ -1477,7 +1494,8 @@ fields yourself.  In that case, the header set must be "read" from the stream vi
     .. member::  void * (*hsi_create_header_set)(void *hsi_ctx, lsquic_stream_t *stream, int is_push_promise)
 
         :param hsi_ctx: User context.  This is the pointer specifed in ``ea_hsi_ctx``.
-        :param stream: Stream with which the header set is associated.
+        :param stream: Stream with which the header set is associated.  May be set
+                       to NULL in server mode.
         :param is_push_promise: Boolean value indicating whether this header set is
                                 for a push promise.
         :return: Pointer to user-defined header set object.
@@ -1530,7 +1548,9 @@ fields yourself.  In that case, the header set must be "read" from the stream vi
     .. member:: enum lsquic_hsi_flag hsi_flags
 
         These flags specify properties of decoded headers passed to
-        ``hsi_process_header()``.
+        ``hsi_process_header()``.  This is only applicable to QPACK headers;
+        HPACK library header properties are based on compilation, not
+        run-time, options.
 
 .. function:: void * lsquic_stream_get_hset (lsquic_stream_t *stream)
 

@@ -156,6 +156,11 @@ struct conn_iface
     int
     (*ci_is_push_enabled) (struct lsquic_conn *);
 
+    /* Optional: only used by gQUIC frames reader */
+    /* If stream is already closed, NULL is returned */
+    struct lsquic_stream *
+    (*ci_get_stream_by_id) (struct lsquic_conn *, lsquic_stream_id_t stream_id);
+
     struct lsquic_engine *
     (*ci_get_engine) (struct lsquic_conn *);
 
@@ -238,6 +243,10 @@ struct conn_iface
     /* Optional method.  Only used by the IETF client code. */
     void
     (*ci_drop_crypto_streams) (struct lsquic_conn *);
+
+    /* Optional method.  Only used by IETF connections */
+    void
+    (*ci_count_garbage) (struct lsquic_conn *, size_t);
 };
 
 #define LSCONN_CCE_BITS 3
