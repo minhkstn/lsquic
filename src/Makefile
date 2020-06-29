@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -91,14 +91,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles /home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/CMakeFiles/progress.marks
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(MAKE) -f CMakeFiles/Makefile2 src/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles 0
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src/CMakeFiles/progress.marks
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(MAKE) -f CMakeFiles/Makefile2 src/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(MAKE) -f CMakeFiles/Makefile2 src/clean
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(MAKE) -f CMakeFiles/Makefile2 src/clean
 .PHONY : clean
 
 # The main clean target
@@ -108,17 +108,17 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Help Target
@@ -141,6 +141,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 # Include any dependencies generated for this target.
 include CMakeFiles/http_client.dir/depend.make
@@ -57,116 +57,116 @@ include CMakeFiles/http_client.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/http_client.dir/flags.make
 
-CMakeFiles/http_client.dir/test/http_client.c.o: CMakeFiles/http_client.dir/flags.make
-CMakeFiles/http_client.dir/test/http_client.c.o: test/http_client.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/http_client.dir/test/http_client.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/test/http_client.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/http_client.c
+CMakeFiles/http_client.dir/bin/http_client.c.o: CMakeFiles/http_client.dir/flags.make
+CMakeFiles/http_client.dir/bin/http_client.c.o: bin/http_client.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/http_client.dir/bin/http_client.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/bin/http_client.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/http_client.c
 
-CMakeFiles/http_client.dir/test/http_client.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/test/http_client.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/http_client.c > CMakeFiles/http_client.dir/test/http_client.c.i
+CMakeFiles/http_client.dir/bin/http_client.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/bin/http_client.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/http_client.c > CMakeFiles/http_client.dir/bin/http_client.c.i
 
-CMakeFiles/http_client.dir/test/http_client.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/test/http_client.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/http_client.c -o CMakeFiles/http_client.dir/test/http_client.c.s
+CMakeFiles/http_client.dir/bin/http_client.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/bin/http_client.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/http_client.c -o CMakeFiles/http_client.dir/bin/http_client.c.s
 
-CMakeFiles/http_client.dir/test/http_client.c.o.requires:
+CMakeFiles/http_client.dir/bin/http_client.c.o.requires:
 
-.PHONY : CMakeFiles/http_client.dir/test/http_client.c.o.requires
+.PHONY : CMakeFiles/http_client.dir/bin/http_client.c.o.requires
 
-CMakeFiles/http_client.dir/test/http_client.c.o.provides: CMakeFiles/http_client.dir/test/http_client.c.o.requires
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/http_client.c.o.provides.build
-.PHONY : CMakeFiles/http_client.dir/test/http_client.c.o.provides
+CMakeFiles/http_client.dir/bin/http_client.c.o.provides: CMakeFiles/http_client.dir/bin/http_client.c.o.requires
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/http_client.c.o.provides.build
+.PHONY : CMakeFiles/http_client.dir/bin/http_client.c.o.provides
 
-CMakeFiles/http_client.dir/test/http_client.c.o.provides.build: CMakeFiles/http_client.dir/test/http_client.c.o
-
-
-CMakeFiles/http_client.dir/test/prog.c.o: CMakeFiles/http_client.dir/flags.make
-CMakeFiles/http_client.dir/test/prog.c.o: test/prog.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/http_client.dir/test/prog.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/test/prog.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/prog.c
-
-CMakeFiles/http_client.dir/test/prog.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/test/prog.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/prog.c > CMakeFiles/http_client.dir/test/prog.c.i
-
-CMakeFiles/http_client.dir/test/prog.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/test/prog.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/prog.c -o CMakeFiles/http_client.dir/test/prog.c.s
-
-CMakeFiles/http_client.dir/test/prog.c.o.requires:
-
-.PHONY : CMakeFiles/http_client.dir/test/prog.c.o.requires
-
-CMakeFiles/http_client.dir/test/prog.c.o.provides: CMakeFiles/http_client.dir/test/prog.c.o.requires
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/prog.c.o.provides.build
-.PHONY : CMakeFiles/http_client.dir/test/prog.c.o.provides
-
-CMakeFiles/http_client.dir/test/prog.c.o.provides.build: CMakeFiles/http_client.dir/test/prog.c.o
+CMakeFiles/http_client.dir/bin/http_client.c.o.provides.build: CMakeFiles/http_client.dir/bin/http_client.c.o
 
 
-CMakeFiles/http_client.dir/test/test_common.c.o: CMakeFiles/http_client.dir/flags.make
-CMakeFiles/http_client.dir/test/test_common.c.o: test/test_common.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/http_client.dir/test/test_common.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/test/test_common.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_common.c
+CMakeFiles/http_client.dir/bin/prog.c.o: CMakeFiles/http_client.dir/flags.make
+CMakeFiles/http_client.dir/bin/prog.c.o: bin/prog.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/http_client.dir/bin/prog.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/bin/prog.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/prog.c
 
-CMakeFiles/http_client.dir/test/test_common.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/test/test_common.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_common.c > CMakeFiles/http_client.dir/test/test_common.c.i
+CMakeFiles/http_client.dir/bin/prog.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/bin/prog.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/prog.c > CMakeFiles/http_client.dir/bin/prog.c.i
 
-CMakeFiles/http_client.dir/test/test_common.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/test/test_common.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_common.c -o CMakeFiles/http_client.dir/test/test_common.c.s
+CMakeFiles/http_client.dir/bin/prog.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/bin/prog.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/prog.c -o CMakeFiles/http_client.dir/bin/prog.c.s
 
-CMakeFiles/http_client.dir/test/test_common.c.o.requires:
+CMakeFiles/http_client.dir/bin/prog.c.o.requires:
 
-.PHONY : CMakeFiles/http_client.dir/test/test_common.c.o.requires
+.PHONY : CMakeFiles/http_client.dir/bin/prog.c.o.requires
 
-CMakeFiles/http_client.dir/test/test_common.c.o.provides: CMakeFiles/http_client.dir/test/test_common.c.o.requires
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_common.c.o.provides.build
-.PHONY : CMakeFiles/http_client.dir/test/test_common.c.o.provides
+CMakeFiles/http_client.dir/bin/prog.c.o.provides: CMakeFiles/http_client.dir/bin/prog.c.o.requires
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/prog.c.o.provides.build
+.PHONY : CMakeFiles/http_client.dir/bin/prog.c.o.provides
 
-CMakeFiles/http_client.dir/test/test_common.c.o.provides.build: CMakeFiles/http_client.dir/test/test_common.c.o
+CMakeFiles/http_client.dir/bin/prog.c.o.provides.build: CMakeFiles/http_client.dir/bin/prog.c.o
 
 
-CMakeFiles/http_client.dir/test/test_cert.c.o: CMakeFiles/http_client.dir/flags.make
-CMakeFiles/http_client.dir/test/test_cert.c.o: test/test_cert.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/http_client.dir/test/test_cert.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/test/test_cert.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_cert.c
+CMakeFiles/http_client.dir/bin/test_common.c.o: CMakeFiles/http_client.dir/flags.make
+CMakeFiles/http_client.dir/bin/test_common.c.o: bin/test_common.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/http_client.dir/bin/test_common.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/bin/test_common.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_common.c
 
-CMakeFiles/http_client.dir/test/test_cert.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/test/test_cert.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_cert.c > CMakeFiles/http_client.dir/test/test_cert.c.i
+CMakeFiles/http_client.dir/bin/test_common.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/bin/test_common.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_common.c > CMakeFiles/http_client.dir/bin/test_common.c.i
 
-CMakeFiles/http_client.dir/test/test_cert.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/test/test_cert.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_cert.c -o CMakeFiles/http_client.dir/test/test_cert.c.s
+CMakeFiles/http_client.dir/bin/test_common.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/bin/test_common.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_common.c -o CMakeFiles/http_client.dir/bin/test_common.c.s
 
-CMakeFiles/http_client.dir/test/test_cert.c.o.requires:
+CMakeFiles/http_client.dir/bin/test_common.c.o.requires:
 
-.PHONY : CMakeFiles/http_client.dir/test/test_cert.c.o.requires
+.PHONY : CMakeFiles/http_client.dir/bin/test_common.c.o.requires
 
-CMakeFiles/http_client.dir/test/test_cert.c.o.provides: CMakeFiles/http_client.dir/test/test_cert.c.o.requires
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_cert.c.o.provides.build
-.PHONY : CMakeFiles/http_client.dir/test/test_cert.c.o.provides
+CMakeFiles/http_client.dir/bin/test_common.c.o.provides: CMakeFiles/http_client.dir/bin/test_common.c.o.requires
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_common.c.o.provides.build
+.PHONY : CMakeFiles/http_client.dir/bin/test_common.c.o.provides
 
-CMakeFiles/http_client.dir/test/test_cert.c.o.provides.build: CMakeFiles/http_client.dir/test/test_cert.c.o
+CMakeFiles/http_client.dir/bin/test_common.c.o.provides.build: CMakeFiles/http_client.dir/bin/test_common.c.o
+
+
+CMakeFiles/http_client.dir/bin/test_cert.c.o: CMakeFiles/http_client.dir/flags.make
+CMakeFiles/http_client.dir/bin/test_cert.c.o: bin/test_cert.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/http_client.dir/bin/test_cert.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/http_client.dir/bin/test_cert.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_cert.c
+
+CMakeFiles/http_client.dir/bin/test_cert.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/http_client.dir/bin/test_cert.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_cert.c > CMakeFiles/http_client.dir/bin/test_cert.c.i
+
+CMakeFiles/http_client.dir/bin/test_cert.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/http_client.dir/bin/test_cert.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_cert.c -o CMakeFiles/http_client.dir/bin/test_cert.c.s
+
+CMakeFiles/http_client.dir/bin/test_cert.c.o.requires:
+
+.PHONY : CMakeFiles/http_client.dir/bin/test_cert.c.o.requires
+
+CMakeFiles/http_client.dir/bin/test_cert.c.o.provides: CMakeFiles/http_client.dir/bin/test_cert.c.o.requires
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_cert.c.o.provides.build
+.PHONY : CMakeFiles/http_client.dir/bin/test_cert.c.o.provides
+
+CMakeFiles/http_client.dir/bin/test_cert.c.o.provides.build: CMakeFiles/http_client.dir/bin/test_cert.c.o
 
 
 # Object files for target http_client
 http_client_OBJECTS = \
-"CMakeFiles/http_client.dir/test/http_client.c.o" \
-"CMakeFiles/http_client.dir/test/prog.c.o" \
-"CMakeFiles/http_client.dir/test/test_common.c.o" \
-"CMakeFiles/http_client.dir/test/test_cert.c.o"
+"CMakeFiles/http_client.dir/bin/http_client.c.o" \
+"CMakeFiles/http_client.dir/bin/prog.c.o" \
+"CMakeFiles/http_client.dir/bin/test_common.c.o" \
+"CMakeFiles/http_client.dir/bin/test_cert.c.o"
 
 # External object files for target http_client
 http_client_EXTERNAL_OBJECTS =
 
-http_client: CMakeFiles/http_client.dir/test/http_client.c.o
-http_client: CMakeFiles/http_client.dir/test/prog.c.o
-http_client: CMakeFiles/http_client.dir/test/test_common.c.o
-http_client: CMakeFiles/http_client.dir/test/test_cert.c.o
+http_client: CMakeFiles/http_client.dir/bin/http_client.c.o
+http_client: CMakeFiles/http_client.dir/bin/prog.c.o
+http_client: CMakeFiles/http_client.dir/bin/test_common.c.o
+http_client: CMakeFiles/http_client.dir/bin/test_cert.c.o
 http_client: CMakeFiles/http_client.dir/build.make
 http_client: src/liblsquic/liblsquic.a
 http_client: /usr/lib/x86_64-linux-gnu/libevent.a
@@ -174,7 +174,7 @@ http_client: /home/minh/HTTP3_QUIC/LSQUIC/boringssl/ssl/libssl.a
 http_client: /home/minh/HTTP3_QUIC/LSQUIC/boringssl/crypto/libcrypto.a
 http_client: /usr/lib/x86_64-linux-gnu/libz.a
 http_client: CMakeFiles/http_client.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable http_client"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable http_client"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/http_client.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -182,10 +182,10 @@ CMakeFiles/http_client.dir/build: http_client
 
 .PHONY : CMakeFiles/http_client.dir/build
 
-CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/test/http_client.c.o.requires
-CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/test/prog.c.o.requires
-CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/test/test_common.c.o.requires
-CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/test/test_cert.c.o.requires
+CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/bin/http_client.c.o.requires
+CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/bin/prog.c.o.requires
+CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/bin/test_common.c.o.requires
+CMakeFiles/http_client.dir/requires: CMakeFiles/http_client.dir/bin/test_cert.c.o.requires
 
 .PHONY : CMakeFiles/http_client.dir/requires
 
@@ -194,6 +194,6 @@ CMakeFiles/http_client.dir/clean:
 .PHONY : CMakeFiles/http_client.dir/clean
 
 CMakeFiles/http_client.dir/depend:
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles/http_client.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles/http_client.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/http_client.dir/depend
 

@@ -1,4 +1,4 @@
-# Install script for directory: /home/minh/HTTP3_QUIC/LSQUIC/lsquic/src
+# Install script for directory: /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic/cmake_install.cmake")
+  include("/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src/liblsquic/cmake_install.cmake")
 
 endif()
 

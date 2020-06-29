@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -91,9 +91,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles /home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -222,7 +222,7 @@ test_minmax: cmake_check_build_system
 
 # fast build rule for target.
 test_minmax/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_minmax.dir/build.make test/unittests/CMakeFiles/test_minmax.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_minmax.dir/build.make tests/CMakeFiles/test_minmax.dir/build
 .PHONY : test_minmax/fast
 
 #=============================================================================
@@ -235,7 +235,7 @@ test_malo_nopool: cmake_check_build_system
 
 # fast build rule for target.
 test_malo_nopool/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_malo_nopool.dir/build.make test/unittests/CMakeFiles/test_malo_nopool.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_malo_nopool.dir/build.make tests/CMakeFiles/test_malo_nopool.dir/build
 .PHONY : test_malo_nopool/fast
 
 #=============================================================================
@@ -248,7 +248,7 @@ test_min_heap: cmake_check_build_system
 
 # fast build rule for target.
 test_min_heap/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_min_heap.dir/build.make test/unittests/CMakeFiles/test_min_heap.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_min_heap.dir/build.make tests/CMakeFiles/test_min_heap.dir/build
 .PHONY : test_min_heap/fast
 
 #=============================================================================
@@ -261,424 +261,8 @@ graph_cubic: cmake_check_build_system
 
 # fast build rule for target.
 graph_cubic/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/graph_cubic.dir/build.make test/unittests/CMakeFiles/graph_cubic.dir/build
+	$(MAKE) -f tests/CMakeFiles/graph_cubic.dir/build.make tests/CMakeFiles/graph_cubic.dir/build
 .PHONY : graph_cubic/fast
-
-#=============================================================================
-# Target rules for targets named test_frame_rw
-
-# Build rule for target.
-test_frame_rw: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_frame_rw
-.PHONY : test_frame_rw
-
-# fast build rule for target.
-test_frame_rw/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_frame_rw.dir/build.make test/unittests/CMakeFiles/test_frame_rw.dir/build
-.PHONY : test_frame_rw/fast
-
-#=============================================================================
-# Target rules for targets named test_wuf_gquic_be
-
-# Build rule for target.
-test_wuf_gquic_be: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_wuf_gquic_be
-.PHONY : test_wuf_gquic_be
-
-# fast build rule for target.
-test_wuf_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_wuf_gquic_be.dir/build.make test/unittests/CMakeFiles/test_wuf_gquic_be.dir/build
-.PHONY : test_wuf_gquic_be/fast
-
-#=============================================================================
-# Target rules for targets named test_ver_nego
-
-# Build rule for target.
-test_ver_nego: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_ver_nego
-.PHONY : test_ver_nego
-
-# fast build rule for target.
-test_ver_nego/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_ver_nego.dir/build.make test/unittests/CMakeFiles/test_ver_nego.dir/build
-.PHONY : test_ver_nego/fast
-
-#=============================================================================
-# Target rules for targets named test_goaway_gquic_be
-
-# Build rule for target.
-test_goaway_gquic_be: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_goaway_gquic_be
-.PHONY : test_goaway_gquic_be
-
-# fast build rule for target.
-test_goaway_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_goaway_gquic_be.dir/build.make test/unittests/CMakeFiles/test_goaway_gquic_be.dir/build
-.PHONY : test_goaway_gquic_be/fast
-
-#=============================================================================
-# Target rules for targets named test_frame_writer
-
-# Build rule for target.
-test_frame_writer: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_frame_writer
-.PHONY : test_frame_writer
-
-# fast build rule for target.
-test_frame_writer/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_frame_writer.dir/build.make test/unittests/CMakeFiles/test_frame_writer.dir/build
-.PHONY : test_frame_writer/fast
-
-#=============================================================================
-# Target rules for targets named test_packno_len
-
-# Build rule for target.
-test_packno_len: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_packno_len
-.PHONY : test_packno_len
-
-# fast build rule for target.
-test_packno_len/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_packno_len.dir/build.make test/unittests/CMakeFiles/test_packno_len.dir/build
-.PHONY : test_packno_len/fast
-
-#=============================================================================
-# Target rules for targets named test_export_key
-
-# Build rule for target.
-test_export_key: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_export_key
-.PHONY : test_export_key
-
-# fast build rule for target.
-test_export_key/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_export_key.dir/build.make test/unittests/CMakeFiles/test_export_key.dir/build
-.PHONY : test_export_key/fast
-
-#=============================================================================
-# Target rules for targets named test_malo_pooled
-
-# Build rule for target.
-test_malo_pooled: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_malo_pooled
-.PHONY : test_malo_pooled
-
-# fast build rule for target.
-test_malo_pooled/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_malo_pooled.dir/build.make test/unittests/CMakeFiles/test_malo_pooled.dir/build
-.PHONY : test_malo_pooled/fast
-
-#=============================================================================
-# Target rules for targets named test_ack_merge
-
-# Build rule for target.
-test_ack_merge: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_ack_merge
-.PHONY : test_ack_merge
-
-# fast build rule for target.
-test_ack_merge/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_ack_merge.dir/build.make test/unittests/CMakeFiles/test_ack_merge.dir/build
-.PHONY : test_ack_merge/fast
-
-#=============================================================================
-# Target rules for targets named test_purga
-
-# Build rule for target.
-test_purga: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_purga
-.PHONY : test_purga
-
-# fast build rule for target.
-test_purga/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_purga.dir/build.make test/unittests/CMakeFiles/test_purga.dir/build
-.PHONY : test_purga/fast
-
-#=============================================================================
-# Target rules for targets named test_cubic
-
-# Build rule for target.
-test_cubic: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_cubic
-.PHONY : test_cubic
-
-# fast build rule for target.
-test_cubic/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_cubic.dir/build.make test/unittests/CMakeFiles/test_cubic.dir/build
-.PHONY : test_cubic/fast
-
-#=============================================================================
-# Target rules for targets named test_elision
-
-# Build rule for target.
-test_elision: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_elision
-.PHONY : test_elision
-
-# fast build rule for target.
-test_elision/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_elision.dir/build.make test/unittests/CMakeFiles/test_elision.dir/build
-.PHONY : test_elision/fast
-
-#=============================================================================
-# Target rules for targets named test_parse_packet_in
-
-# Build rule for target.
-test_parse_packet_in: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_parse_packet_in
-.PHONY : test_parse_packet_in
-
-# fast build rule for target.
-test_parse_packet_in/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_parse_packet_in.dir/build.make test/unittests/CMakeFiles/test_parse_packet_in.dir/build
-.PHONY : test_parse_packet_in/fast
-
-#=============================================================================
-# Target rules for targets named test_alarmset
-
-# Build rule for target.
-test_alarmset: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_alarmset
-.PHONY : test_alarmset
-
-# fast build rule for target.
-test_alarmset/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_alarmset.dir/build.make test/unittests/CMakeFiles/test_alarmset.dir/build
-.PHONY : test_alarmset/fast
-
-#=============================================================================
-# Target rules for targets named test_h3_framing
-
-# Build rule for target.
-test_h3_framing: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_h3_framing
-.PHONY : test_h3_framing
-
-# fast build rule for target.
-test_h3_framing/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_h3_framing.dir/build.make test/unittests/CMakeFiles/test_h3_framing.dir/build
-.PHONY : test_h3_framing/fast
-
-#=============================================================================
-# Target rules for targets named test_engine_ctor
-
-# Build rule for target.
-test_engine_ctor: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_engine_ctor
-.PHONY : test_engine_ctor
-
-# fast build rule for target.
-test_engine_ctor/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_engine_ctor.dir/build.make test/unittests/CMakeFiles/test_engine_ctor.dir/build
-.PHONY : test_engine_ctor/fast
-
-#=============================================================================
-# Target rules for targets named test_blocked_gquic_be
-
-# Build rule for target.
-test_blocked_gquic_be: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_blocked_gquic_be
-.PHONY : test_blocked_gquic_be
-
-# fast build rule for target.
-test_blocked_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_blocked_gquic_be.dir/build.make test/unittests/CMakeFiles/test_blocked_gquic_be.dir/build
-.PHONY : test_blocked_gquic_be/fast
-
-#=============================================================================
-# Target rules for targets named test_reg_pkt_headergen
-
-# Build rule for target.
-test_reg_pkt_headergen: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_reg_pkt_headergen
-.PHONY : test_reg_pkt_headergen
-
-# fast build rule for target.
-test_reg_pkt_headergen/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_reg_pkt_headergen.dir/build.make test/unittests/CMakeFiles/test_reg_pkt_headergen.dir/build
-.PHONY : test_reg_pkt_headergen/fast
-
-#=============================================================================
-# Target rules for targets named test_varint
-
-# Build rule for target.
-test_varint: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_varint
-.PHONY : test_varint
-
-# fast build rule for target.
-test_varint/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_varint.dir/build.make test/unittests/CMakeFiles/test_varint.dir/build
-.PHONY : test_varint/fast
-
-#=============================================================================
-# Target rules for targets named test_crypto_gen
-
-# Build rule for target.
-test_crypto_gen: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_crypto_gen
-.PHONY : test_crypto_gen
-
-# fast build rule for target.
-test_crypto_gen/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_crypto_gen.dir/build.make test/unittests/CMakeFiles/test_crypto_gen.dir/build
-.PHONY : test_crypto_gen/fast
-
-#=============================================================================
-# Target rules for targets named test_set
-
-# Build rule for target.
-test_set: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_set
-.PHONY : test_set
-
-# fast build rule for target.
-test_set/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_set.dir/build.make test/unittests/CMakeFiles/test_set.dir/build
-.PHONY : test_set/fast
-
-#=============================================================================
-# Target rules for targets named test_di_nocopy
-
-# Build rule for target.
-test_di_nocopy: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_di_nocopy
-.PHONY : test_di_nocopy
-
-# fast build rule for target.
-test_di_nocopy/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_di_nocopy.dir/build.make test/unittests/CMakeFiles/test_di_nocopy.dir/build
-.PHONY : test_di_nocopy/fast
-
-#=============================================================================
-# Target rules for targets named test_streamgen
-
-# Build rule for target.
-test_streamgen: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_streamgen
-.PHONY : test_streamgen
-
-# fast build rule for target.
-test_streamgen/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_streamgen.dir/build.make test/unittests/CMakeFiles/test_streamgen.dir/build
-.PHONY : test_streamgen/fast
-
-#=============================================================================
-# Target rules for targets named test_ackparse_ietf
-
-# Build rule for target.
-test_ackparse_ietf: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_ackparse_ietf
-.PHONY : test_ackparse_ietf
-
-# fast build rule for target.
-test_ackparse_ietf/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_ackparse_ietf.dir/build.make test/unittests/CMakeFiles/test_ackparse_ietf.dir/build
-.PHONY : test_ackparse_ietf/fast
-
-#=============================================================================
-# Target rules for targets named test_stop_waiting_gquic_be
-
-# Build rule for target.
-test_stop_waiting_gquic_be: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_stop_waiting_gquic_be
-.PHONY : test_stop_waiting_gquic_be
-
-# fast build rule for target.
-test_stop_waiting_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_stop_waiting_gquic_be.dir/build.make test/unittests/CMakeFiles/test_stop_waiting_gquic_be.dir/build
-.PHONY : test_stop_waiting_gquic_be/fast
-
-#=============================================================================
-# Target rules for targets named test_ackparse_gquic_be
-
-# Build rule for target.
-test_ackparse_gquic_be: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_ackparse_gquic_be
-.PHONY : test_ackparse_gquic_be
-
-# fast build rule for target.
-test_ackparse_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_ackparse_gquic_be.dir/build.make test/unittests/CMakeFiles/test_ackparse_gquic_be.dir/build
-.PHONY : test_ackparse_gquic_be/fast
-
-#=============================================================================
-# Target rules for targets named test_packet_out
-
-# Build rule for target.
-test_packet_out: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_packet_out
-.PHONY : test_packet_out
-
-# fast build rule for target.
-test_packet_out/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_packet_out.dir/build.make test/unittests/CMakeFiles/test_packet_out.dir/build
-.PHONY : test_packet_out/fast
-
-#=============================================================================
-# Target rules for targets named test_rst_stream_gquic_be
-
-# Build rule for target.
-test_rst_stream_gquic_be: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_rst_stream_gquic_be
-.PHONY : test_rst_stream_gquic_be
-
-# fast build rule for target.
-test_rst_stream_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_rst_stream_gquic_be.dir/build.make test/unittests/CMakeFiles/test_rst_stream_gquic_be.dir/build
-.PHONY : test_rst_stream_gquic_be/fast
-
-#=============================================================================
-# Target rules for targets named test_stream
-
-# Build rule for target.
-test_stream: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_stream
-.PHONY : test_stream
-
-# fast build rule for target.
-test_stream/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_stream.dir/build.make test/unittests/CMakeFiles/test_stream.dir/build
-.PHONY : test_stream/fast
-
-#=============================================================================
-# Target rules for targets named test_frame_chop
-
-# Build rule for target.
-test_frame_chop: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_frame_chop
-.PHONY : test_frame_chop
-
-# fast build rule for target.
-test_frame_chop/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_frame_chop.dir/build.make test/unittests/CMakeFiles/test_frame_chop.dir/build
-.PHONY : test_frame_chop/fast
-
-#=============================================================================
-# Target rules for targets named test_bw_sampler
-
-# Build rule for target.
-test_bw_sampler: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_bw_sampler
-.PHONY : test_bw_sampler
-
-# fast build rule for target.
-test_bw_sampler/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_bw_sampler.dir/build.make test/unittests/CMakeFiles/test_bw_sampler.dir/build
-.PHONY : test_bw_sampler/fast
-
-#=============================================================================
-# Target rules for targets named test_arr
-
-# Build rule for target.
-test_arr: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_arr
-.PHONY : test_arr
-
-# fast build rule for target.
-test_arr/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_arr.dir/build.make test/unittests/CMakeFiles/test_arr.dir/build
-.PHONY : test_arr/fast
 
 #=============================================================================
 # Target rules for targets named mini_parse
@@ -690,7 +274,7 @@ mini_parse: cmake_check_build_system
 
 # fast build rule for target.
 mini_parse/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/mini_parse.dir/build.make test/unittests/CMakeFiles/mini_parse.dir/build
+	$(MAKE) -f tests/CMakeFiles/mini_parse.dir/build.make tests/CMakeFiles/mini_parse.dir/build
 .PHONY : mini_parse/fast
 
 #=============================================================================
@@ -703,34 +287,437 @@ test_hcsi_reader: cmake_check_build_system
 
 # fast build rule for target.
 test_hcsi_reader/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_hcsi_reader.dir/build.make test/unittests/CMakeFiles/test_hcsi_reader.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_hcsi_reader.dir/build.make tests/CMakeFiles/test_hcsi_reader.dir/build
 .PHONY : test_hcsi_reader/fast
 
 #=============================================================================
-# Target rules for targets named test_alt_svc_ver
+# Target rules for targets named test_frame_rw
 
 # Build rule for target.
-test_alt_svc_ver: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_alt_svc_ver
-.PHONY : test_alt_svc_ver
+test_frame_rw: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_frame_rw
+.PHONY : test_frame_rw
 
 # fast build rule for target.
-test_alt_svc_ver/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_alt_svc_ver.dir/build.make test/unittests/CMakeFiles/test_alt_svc_ver.dir/build
-.PHONY : test_alt_svc_ver/fast
+test_frame_rw/fast:
+	$(MAKE) -f tests/CMakeFiles/test_frame_rw.dir/build.make tests/CMakeFiles/test_frame_rw.dir/build
+.PHONY : test_frame_rw/fast
 
 #=============================================================================
-# Target rules for targets named test_senhist
+# Target rules for targets named test_wuf_gquic_be
 
 # Build rule for target.
-test_senhist: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_senhist
-.PHONY : test_senhist
+test_wuf_gquic_be: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_wuf_gquic_be
+.PHONY : test_wuf_gquic_be
 
 # fast build rule for target.
-test_senhist/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_senhist.dir/build.make test/unittests/CMakeFiles/test_senhist.dir/build
-.PHONY : test_senhist/fast
+test_wuf_gquic_be/fast:
+	$(MAKE) -f tests/CMakeFiles/test_wuf_gquic_be.dir/build.make tests/CMakeFiles/test_wuf_gquic_be.dir/build
+.PHONY : test_wuf_gquic_be/fast
+
+#=============================================================================
+# Target rules for targets named test_ver_nego
+
+# Build rule for target.
+test_ver_nego: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_ver_nego
+.PHONY : test_ver_nego
+
+# fast build rule for target.
+test_ver_nego/fast:
+	$(MAKE) -f tests/CMakeFiles/test_ver_nego.dir/build.make tests/CMakeFiles/test_ver_nego.dir/build
+.PHONY : test_ver_nego/fast
+
+#=============================================================================
+# Target rules for targets named test_goaway_gquic_be
+
+# Build rule for target.
+test_goaway_gquic_be: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_goaway_gquic_be
+.PHONY : test_goaway_gquic_be
+
+# fast build rule for target.
+test_goaway_gquic_be/fast:
+	$(MAKE) -f tests/CMakeFiles/test_goaway_gquic_be.dir/build.make tests/CMakeFiles/test_goaway_gquic_be.dir/build
+.PHONY : test_goaway_gquic_be/fast
+
+#=============================================================================
+# Target rules for targets named test_frame_writer
+
+# Build rule for target.
+test_frame_writer: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_frame_writer
+.PHONY : test_frame_writer
+
+# fast build rule for target.
+test_frame_writer/fast:
+	$(MAKE) -f tests/CMakeFiles/test_frame_writer.dir/build.make tests/CMakeFiles/test_frame_writer.dir/build
+.PHONY : test_frame_writer/fast
+
+#=============================================================================
+# Target rules for targets named test_packno_len
+
+# Build rule for target.
+test_packno_len: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_packno_len
+.PHONY : test_packno_len
+
+# fast build rule for target.
+test_packno_len/fast:
+	$(MAKE) -f tests/CMakeFiles/test_packno_len.dir/build.make tests/CMakeFiles/test_packno_len.dir/build
+.PHONY : test_packno_len/fast
+
+#=============================================================================
+# Target rules for targets named test_export_key
+
+# Build rule for target.
+test_export_key: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_export_key
+.PHONY : test_export_key
+
+# fast build rule for target.
+test_export_key/fast:
+	$(MAKE) -f tests/CMakeFiles/test_export_key.dir/build.make tests/CMakeFiles/test_export_key.dir/build
+.PHONY : test_export_key/fast
+
+#=============================================================================
+# Target rules for targets named test_malo_pooled
+
+# Build rule for target.
+test_malo_pooled: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_malo_pooled
+.PHONY : test_malo_pooled
+
+# fast build rule for target.
+test_malo_pooled/fast:
+	$(MAKE) -f tests/CMakeFiles/test_malo_pooled.dir/build.make tests/CMakeFiles/test_malo_pooled.dir/build
+.PHONY : test_malo_pooled/fast
+
+#=============================================================================
+# Target rules for targets named test_ack_merge
+
+# Build rule for target.
+test_ack_merge: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_ack_merge
+.PHONY : test_ack_merge
+
+# fast build rule for target.
+test_ack_merge/fast:
+	$(MAKE) -f tests/CMakeFiles/test_ack_merge.dir/build.make tests/CMakeFiles/test_ack_merge.dir/build
+.PHONY : test_ack_merge/fast
+
+#=============================================================================
+# Target rules for targets named test_purga
+
+# Build rule for target.
+test_purga: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_purga
+.PHONY : test_purga
+
+# fast build rule for target.
+test_purga/fast:
+	$(MAKE) -f tests/CMakeFiles/test_purga.dir/build.make tests/CMakeFiles/test_purga.dir/build
+.PHONY : test_purga/fast
+
+#=============================================================================
+# Target rules for targets named test_cubic
+
+# Build rule for target.
+test_cubic: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_cubic
+.PHONY : test_cubic
+
+# fast build rule for target.
+test_cubic/fast:
+	$(MAKE) -f tests/CMakeFiles/test_cubic.dir/build.make tests/CMakeFiles/test_cubic.dir/build
+.PHONY : test_cubic/fast
+
+#=============================================================================
+# Target rules for targets named test_elision
+
+# Build rule for target.
+test_elision: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_elision
+.PHONY : test_elision
+
+# fast build rule for target.
+test_elision/fast:
+	$(MAKE) -f tests/CMakeFiles/test_elision.dir/build.make tests/CMakeFiles/test_elision.dir/build
+.PHONY : test_elision/fast
+
+#=============================================================================
+# Target rules for targets named test_parse_packet_in
+
+# Build rule for target.
+test_parse_packet_in: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_parse_packet_in
+.PHONY : test_parse_packet_in
+
+# fast build rule for target.
+test_parse_packet_in/fast:
+	$(MAKE) -f tests/CMakeFiles/test_parse_packet_in.dir/build.make tests/CMakeFiles/test_parse_packet_in.dir/build
+.PHONY : test_parse_packet_in/fast
+
+#=============================================================================
+# Target rules for targets named test_alarmset
+
+# Build rule for target.
+test_alarmset: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_alarmset
+.PHONY : test_alarmset
+
+# fast build rule for target.
+test_alarmset/fast:
+	$(MAKE) -f tests/CMakeFiles/test_alarmset.dir/build.make tests/CMakeFiles/test_alarmset.dir/build
+.PHONY : test_alarmset/fast
+
+#=============================================================================
+# Target rules for targets named test_h3_framing
+
+# Build rule for target.
+test_h3_framing: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_h3_framing
+.PHONY : test_h3_framing
+
+# fast build rule for target.
+test_h3_framing/fast:
+	$(MAKE) -f tests/CMakeFiles/test_h3_framing.dir/build.make tests/CMakeFiles/test_h3_framing.dir/build
+.PHONY : test_h3_framing/fast
+
+#=============================================================================
+# Target rules for targets named test_engine_ctor
+
+# Build rule for target.
+test_engine_ctor: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_engine_ctor
+.PHONY : test_engine_ctor
+
+# fast build rule for target.
+test_engine_ctor/fast:
+	$(MAKE) -f tests/CMakeFiles/test_engine_ctor.dir/build.make tests/CMakeFiles/test_engine_ctor.dir/build
+.PHONY : test_engine_ctor/fast
+
+#=============================================================================
+# Target rules for targets named test_blocked_gquic_be
+
+# Build rule for target.
+test_blocked_gquic_be: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_blocked_gquic_be
+.PHONY : test_blocked_gquic_be
+
+# fast build rule for target.
+test_blocked_gquic_be/fast:
+	$(MAKE) -f tests/CMakeFiles/test_blocked_gquic_be.dir/build.make tests/CMakeFiles/test_blocked_gquic_be.dir/build
+.PHONY : test_blocked_gquic_be/fast
+
+#=============================================================================
+# Target rules for targets named test_reg_pkt_headergen
+
+# Build rule for target.
+test_reg_pkt_headergen: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_reg_pkt_headergen
+.PHONY : test_reg_pkt_headergen
+
+# fast build rule for target.
+test_reg_pkt_headergen/fast:
+	$(MAKE) -f tests/CMakeFiles/test_reg_pkt_headergen.dir/build.make tests/CMakeFiles/test_reg_pkt_headergen.dir/build
+.PHONY : test_reg_pkt_headergen/fast
+
+#=============================================================================
+# Target rules for targets named test_varint
+
+# Build rule for target.
+test_varint: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_varint
+.PHONY : test_varint
+
+# fast build rule for target.
+test_varint/fast:
+	$(MAKE) -f tests/CMakeFiles/test_varint.dir/build.make tests/CMakeFiles/test_varint.dir/build
+.PHONY : test_varint/fast
+
+#=============================================================================
+# Target rules for targets named test_crypto_gen
+
+# Build rule for target.
+test_crypto_gen: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_crypto_gen
+.PHONY : test_crypto_gen
+
+# fast build rule for target.
+test_crypto_gen/fast:
+	$(MAKE) -f tests/CMakeFiles/test_crypto_gen.dir/build.make tests/CMakeFiles/test_crypto_gen.dir/build
+.PHONY : test_crypto_gen/fast
+
+#=============================================================================
+# Target rules for targets named test_set
+
+# Build rule for target.
+test_set: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_set
+.PHONY : test_set
+
+# fast build rule for target.
+test_set/fast:
+	$(MAKE) -f tests/CMakeFiles/test_set.dir/build.make tests/CMakeFiles/test_set.dir/build
+.PHONY : test_set/fast
+
+#=============================================================================
+# Target rules for targets named test_tokgen
+
+# Build rule for target.
+test_tokgen: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_tokgen
+.PHONY : test_tokgen
+
+# fast build rule for target.
+test_tokgen/fast:
+	$(MAKE) -f tests/CMakeFiles/test_tokgen.dir/build.make tests/CMakeFiles/test_tokgen.dir/build
+.PHONY : test_tokgen/fast
+
+#=============================================================================
+# Target rules for targets named test_di_nocopy
+
+# Build rule for target.
+test_di_nocopy: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_di_nocopy
+.PHONY : test_di_nocopy
+
+# fast build rule for target.
+test_di_nocopy/fast:
+	$(MAKE) -f tests/CMakeFiles/test_di_nocopy.dir/build.make tests/CMakeFiles/test_di_nocopy.dir/build
+.PHONY : test_di_nocopy/fast
+
+#=============================================================================
+# Target rules for targets named test_streamgen
+
+# Build rule for target.
+test_streamgen: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_streamgen
+.PHONY : test_streamgen
+
+# fast build rule for target.
+test_streamgen/fast:
+	$(MAKE) -f tests/CMakeFiles/test_streamgen.dir/build.make tests/CMakeFiles/test_streamgen.dir/build
+.PHONY : test_streamgen/fast
+
+#=============================================================================
+# Target rules for targets named test_ackparse_ietf
+
+# Build rule for target.
+test_ackparse_ietf: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_ackparse_ietf
+.PHONY : test_ackparse_ietf
+
+# fast build rule for target.
+test_ackparse_ietf/fast:
+	$(MAKE) -f tests/CMakeFiles/test_ackparse_ietf.dir/build.make tests/CMakeFiles/test_ackparse_ietf.dir/build
+.PHONY : test_ackparse_ietf/fast
+
+#=============================================================================
+# Target rules for targets named test_stop_waiting_gquic_be
+
+# Build rule for target.
+test_stop_waiting_gquic_be: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_stop_waiting_gquic_be
+.PHONY : test_stop_waiting_gquic_be
+
+# fast build rule for target.
+test_stop_waiting_gquic_be/fast:
+	$(MAKE) -f tests/CMakeFiles/test_stop_waiting_gquic_be.dir/build.make tests/CMakeFiles/test_stop_waiting_gquic_be.dir/build
+.PHONY : test_stop_waiting_gquic_be/fast
+
+#=============================================================================
+# Target rules for targets named test_ackparse_gquic_be
+
+# Build rule for target.
+test_ackparse_gquic_be: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_ackparse_gquic_be
+.PHONY : test_ackparse_gquic_be
+
+# fast build rule for target.
+test_ackparse_gquic_be/fast:
+	$(MAKE) -f tests/CMakeFiles/test_ackparse_gquic_be.dir/build.make tests/CMakeFiles/test_ackparse_gquic_be.dir/build
+.PHONY : test_ackparse_gquic_be/fast
+
+#=============================================================================
+# Target rules for targets named test_packet_out
+
+# Build rule for target.
+test_packet_out: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_packet_out
+.PHONY : test_packet_out
+
+# fast build rule for target.
+test_packet_out/fast:
+	$(MAKE) -f tests/CMakeFiles/test_packet_out.dir/build.make tests/CMakeFiles/test_packet_out.dir/build
+.PHONY : test_packet_out/fast
+
+#=============================================================================
+# Target rules for targets named test_rst_stream_gquic_be
+
+# Build rule for target.
+test_rst_stream_gquic_be: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_rst_stream_gquic_be
+.PHONY : test_rst_stream_gquic_be
+
+# fast build rule for target.
+test_rst_stream_gquic_be/fast:
+	$(MAKE) -f tests/CMakeFiles/test_rst_stream_gquic_be.dir/build.make tests/CMakeFiles/test_rst_stream_gquic_be.dir/build
+.PHONY : test_rst_stream_gquic_be/fast
+
+#=============================================================================
+# Target rules for targets named test_stream
+
+# Build rule for target.
+test_stream: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_stream
+.PHONY : test_stream
+
+# fast build rule for target.
+test_stream/fast:
+	$(MAKE) -f tests/CMakeFiles/test_stream.dir/build.make tests/CMakeFiles/test_stream.dir/build
+.PHONY : test_stream/fast
+
+#=============================================================================
+# Target rules for targets named test_frame_chop
+
+# Build rule for target.
+test_frame_chop: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_frame_chop
+.PHONY : test_frame_chop
+
+# fast build rule for target.
+test_frame_chop/fast:
+	$(MAKE) -f tests/CMakeFiles/test_frame_chop.dir/build.make tests/CMakeFiles/test_frame_chop.dir/build
+.PHONY : test_frame_chop/fast
+
+#=============================================================================
+# Target rules for targets named test_bw_sampler
+
+# Build rule for target.
+test_bw_sampler: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_bw_sampler
+.PHONY : test_bw_sampler
+
+# fast build rule for target.
+test_bw_sampler/fast:
+	$(MAKE) -f tests/CMakeFiles/test_bw_sampler.dir/build.make tests/CMakeFiles/test_bw_sampler.dir/build
+.PHONY : test_bw_sampler/fast
+
+#=============================================================================
+# Target rules for targets named test_arr
+
+# Build rule for target.
+test_arr: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_arr
+.PHONY : test_arr
+
+# fast build rule for target.
+test_arr/fast:
+	$(MAKE) -f tests/CMakeFiles/test_arr.dir/build.make tests/CMakeFiles/test_arr.dir/build
+.PHONY : test_arr/fast
 
 #=============================================================================
 # Target rules for targets named test_frame_reader
@@ -742,7 +729,7 @@ test_frame_reader: cmake_check_build_system
 
 # fast build rule for target.
 test_frame_reader/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_frame_reader.dir/build.make test/unittests/CMakeFiles/test_frame_reader.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_frame_reader.dir/build.make tests/CMakeFiles/test_frame_reader.dir/build
 .PHONY : test_frame_reader/fast
 
 #=============================================================================
@@ -755,7 +742,7 @@ test_hkdf: cmake_check_build_system
 
 # fast build rule for target.
 test_hkdf/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_hkdf.dir/build.make test/unittests/CMakeFiles/test_hkdf.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_hkdf.dir/build.make tests/CMakeFiles/test_hkdf.dir/build
 .PHONY : test_hkdf/fast
 
 #=============================================================================
@@ -768,7 +755,7 @@ test_dec: cmake_check_build_system
 
 # fast build rule for target.
 test_dec/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_dec.dir/build.make test/unittests/CMakeFiles/test_dec.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_dec.dir/build.make tests/CMakeFiles/test_dec.dir/build
 .PHONY : test_dec/fast
 
 #=============================================================================
@@ -781,7 +768,7 @@ test_attq: cmake_check_build_system
 
 # fast build rule for target.
 test_attq/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_attq.dir/build.make test/unittests/CMakeFiles/test_attq.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_attq.dir/build.make tests/CMakeFiles/test_attq.dir/build
 .PHONY : test_attq/fast
 
 #=============================================================================
@@ -794,7 +781,7 @@ test_lsquic_hash: cmake_check_build_system
 
 # fast build rule for target.
 test_lsquic_hash/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_lsquic_hash.dir/build.make test/unittests/CMakeFiles/test_lsquic_hash.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_lsquic_hash.dir/build.make tests/CMakeFiles/test_lsquic_hash.dir/build
 .PHONY : test_lsquic_hash/fast
 
 #=============================================================================
@@ -807,7 +794,7 @@ test_ack: cmake_check_build_system
 
 # fast build rule for target.
 test_ack/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_ack.dir/build.make test/unittests/CMakeFiles/test_ack.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_ack.dir/build.make tests/CMakeFiles/test_ack.dir/build
 .PHONY : test_ack/fast
 
 #=============================================================================
@@ -820,7 +807,7 @@ test_quic_be_floats: cmake_check_build_system
 
 # fast build rule for target.
 test_quic_be_floats/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_quic_be_floats.dir/build.make test/unittests/CMakeFiles/test_quic_be_floats.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_quic_be_floats.dir/build.make tests/CMakeFiles/test_quic_be_floats.dir/build
 .PHONY : test_quic_be_floats/fast
 
 #=============================================================================
@@ -833,7 +820,7 @@ test_rechist: cmake_check_build_system
 
 # fast build rule for target.
 test_rechist/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_rechist.dir/build.make test/unittests/CMakeFiles/test_rechist.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_rechist.dir/build.make tests/CMakeFiles/test_rechist.dir/build
 .PHONY : test_rechist/fast
 
 #=============================================================================
@@ -846,7 +833,7 @@ test_ackgen_gquic_be: cmake_check_build_system
 
 # fast build rule for target.
 test_ackgen_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_ackgen_gquic_be.dir/build.make test/unittests/CMakeFiles/test_ackgen_gquic_be.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_ackgen_gquic_be.dir/build.make tests/CMakeFiles/test_ackgen_gquic_be.dir/build
 .PHONY : test_ackgen_gquic_be/fast
 
 #=============================================================================
@@ -859,7 +846,7 @@ test_conn_close_gquic_be: cmake_check_build_system
 
 # fast build rule for target.
 test_conn_close_gquic_be/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_conn_close_gquic_be.dir/build.make test/unittests/CMakeFiles/test_conn_close_gquic_be.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_conn_close_gquic_be.dir/build.make tests/CMakeFiles/test_conn_close_gquic_be.dir/build
 .PHONY : test_conn_close_gquic_be/fast
 
 #=============================================================================
@@ -872,7 +859,7 @@ test_rtt: cmake_check_build_system
 
 # fast build rule for target.
 test_rtt/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_rtt.dir/build.make test/unittests/CMakeFiles/test_rtt.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_rtt.dir/build.make tests/CMakeFiles/test_rtt.dir/build
 .PHONY : test_rtt/fast
 
 #=============================================================================
@@ -885,8 +872,34 @@ test_send_headers: cmake_check_build_system
 
 # fast build rule for target.
 test_send_headers/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_send_headers.dir/build.make test/unittests/CMakeFiles/test_send_headers.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_send_headers.dir/build.make tests/CMakeFiles/test_send_headers.dir/build
 .PHONY : test_send_headers/fast
+
+#=============================================================================
+# Target rules for targets named test_alt_svc_ver
+
+# Build rule for target.
+test_alt_svc_ver: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_alt_svc_ver
+.PHONY : test_alt_svc_ver
+
+# fast build rule for target.
+test_alt_svc_ver/fast:
+	$(MAKE) -f tests/CMakeFiles/test_alt_svc_ver.dir/build.make tests/CMakeFiles/test_alt_svc_ver.dir/build
+.PHONY : test_alt_svc_ver/fast
+
+#=============================================================================
+# Target rules for targets named test_senhist
+
+# Build rule for target.
+test_senhist: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_senhist
+.PHONY : test_senhist
+
+# fast build rule for target.
+test_senhist/fast:
+	$(MAKE) -f tests/CMakeFiles/test_senhist.dir/build.make tests/CMakeFiles/test_senhist.dir/build
+.PHONY : test_senhist/fast
 
 #=============================================================================
 # Target rules for targets named test_sfcw
@@ -898,7 +911,7 @@ test_sfcw: cmake_check_build_system
 
 # fast build rule for target.
 test_sfcw/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_sfcw.dir/build.make test/unittests/CMakeFiles/test_sfcw.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_sfcw.dir/build.make tests/CMakeFiles/test_sfcw.dir/build
 .PHONY : test_sfcw/fast
 
 #=============================================================================
@@ -911,7 +924,7 @@ test_shi: cmake_check_build_system
 
 # fast build rule for target.
 test_shi/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_shi.dir/build.make test/unittests/CMakeFiles/test_shi.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_shi.dir/build.make tests/CMakeFiles/test_shi.dir/build
 .PHONY : test_shi/fast
 
 #=============================================================================
@@ -924,7 +937,7 @@ test_qlog: cmake_check_build_system
 
 # fast build rule for target.
 test_qlog/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_qlog.dir/build.make test/unittests/CMakeFiles/test_qlog.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_qlog.dir/build.make tests/CMakeFiles/test_qlog.dir/build
 .PHONY : test_qlog/fast
 
 #=============================================================================
@@ -937,7 +950,7 @@ test_spi: cmake_check_build_system
 
 # fast build rule for target.
 test_spi/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_spi.dir/build.make test/unittests/CMakeFiles/test_spi.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_spi.dir/build.make tests/CMakeFiles/test_spi.dir/build
 .PHONY : test_spi/fast
 
 #=============================================================================
@@ -950,7 +963,7 @@ test_streamparse: cmake_check_build_system
 
 # fast build rule for target.
 test_streamparse/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_streamparse.dir/build.make test/unittests/CMakeFiles/test_streamparse.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_streamparse.dir/build.make tests/CMakeFiles/test_streamparse.dir/build
 .PHONY : test_streamparse/fast
 
 #=============================================================================
@@ -963,296 +976,296 @@ test_trapa: cmake_check_build_system
 
 # fast build rule for target.
 test_trapa/fast:
-	$(MAKE) -f test/unittests/CMakeFiles/test_trapa.dir/build.make test/unittests/CMakeFiles/test_trapa.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_trapa.dir/build.make tests/CMakeFiles/test_trapa.dir/build
 .PHONY : test_trapa/fast
 
-test/echo_client.o: test/echo_client.c.o
+bin/echo_client.o: bin/echo_client.c.o
 
-.PHONY : test/echo_client.o
-
-# target to build an object file
-test/echo_client.c.o:
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/echo_client.c.o
-.PHONY : test/echo_client.c.o
-
-test/echo_client.i: test/echo_client.c.i
-
-.PHONY : test/echo_client.i
-
-# target to preprocess a source file
-test/echo_client.c.i:
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/echo_client.c.i
-.PHONY : test/echo_client.c.i
-
-test/echo_client.s: test/echo_client.c.s
-
-.PHONY : test/echo_client.s
-
-# target to generate assembly for a file
-test/echo_client.c.s:
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/echo_client.c.s
-.PHONY : test/echo_client.c.s
-
-test/echo_server.o: test/echo_server.c.o
-
-.PHONY : test/echo_server.o
+.PHONY : bin/echo_client.o
 
 # target to build an object file
-test/echo_server.c.o:
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/echo_server.c.o
-.PHONY : test/echo_server.c.o
+bin/echo_client.c.o:
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/echo_client.c.o
+.PHONY : bin/echo_client.c.o
 
-test/echo_server.i: test/echo_server.c.i
+bin/echo_client.i: bin/echo_client.c.i
 
-.PHONY : test/echo_server.i
+.PHONY : bin/echo_client.i
 
 # target to preprocess a source file
-test/echo_server.c.i:
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/echo_server.c.i
-.PHONY : test/echo_server.c.i
+bin/echo_client.c.i:
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/echo_client.c.i
+.PHONY : bin/echo_client.c.i
 
-test/echo_server.s: test/echo_server.c.s
+bin/echo_client.s: bin/echo_client.c.s
 
-.PHONY : test/echo_server.s
+.PHONY : bin/echo_client.s
 
 # target to generate assembly for a file
-test/echo_server.c.s:
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/echo_server.c.s
-.PHONY : test/echo_server.c.s
+bin/echo_client.c.s:
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/echo_client.c.s
+.PHONY : bin/echo_client.c.s
 
-test/http_client.o: test/http_client.c.o
+bin/echo_server.o: bin/echo_server.c.o
 
-.PHONY : test/http_client.o
+.PHONY : bin/echo_server.o
 
 # target to build an object file
-test/http_client.c.o:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/http_client.c.o
-.PHONY : test/http_client.c.o
+bin/echo_server.c.o:
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/echo_server.c.o
+.PHONY : bin/echo_server.c.o
 
-test/http_client.i: test/http_client.c.i
+bin/echo_server.i: bin/echo_server.c.i
 
-.PHONY : test/http_client.i
+.PHONY : bin/echo_server.i
 
 # target to preprocess a source file
-test/http_client.c.i:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/http_client.c.i
-.PHONY : test/http_client.c.i
+bin/echo_server.c.i:
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/echo_server.c.i
+.PHONY : bin/echo_server.c.i
 
-test/http_client.s: test/http_client.c.s
+bin/echo_server.s: bin/echo_server.c.s
 
-.PHONY : test/http_client.s
+.PHONY : bin/echo_server.s
 
 # target to generate assembly for a file
-test/http_client.c.s:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/http_client.c.s
-.PHONY : test/http_client.c.s
+bin/echo_server.c.s:
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/echo_server.c.s
+.PHONY : bin/echo_server.c.s
 
-test/http_server.o: test/http_server.c.o
+bin/http_client.o: bin/http_client.c.o
 
-.PHONY : test/http_server.o
+.PHONY : bin/http_client.o
 
 # target to build an object file
-test/http_server.c.o:
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/http_server.c.o
-.PHONY : test/http_server.c.o
+bin/http_client.c.o:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/http_client.c.o
+.PHONY : bin/http_client.c.o
 
-test/http_server.i: test/http_server.c.i
+bin/http_client.i: bin/http_client.c.i
 
-.PHONY : test/http_server.i
+.PHONY : bin/http_client.i
 
 # target to preprocess a source file
-test/http_server.c.i:
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/http_server.c.i
-.PHONY : test/http_server.c.i
+bin/http_client.c.i:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/http_client.c.i
+.PHONY : bin/http_client.c.i
 
-test/http_server.s: test/http_server.c.s
+bin/http_client.s: bin/http_client.c.s
 
-.PHONY : test/http_server.s
+.PHONY : bin/http_client.s
 
 # target to generate assembly for a file
-test/http_server.c.s:
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/http_server.c.s
-.PHONY : test/http_server.c.s
+bin/http_client.c.s:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/http_client.c.s
+.PHONY : bin/http_client.c.s
 
-test/md5_client.o: test/md5_client.c.o
+bin/http_server.o: bin/http_server.c.o
 
-.PHONY : test/md5_client.o
+.PHONY : bin/http_server.o
 
 # target to build an object file
-test/md5_client.c.o:
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/md5_client.c.o
-.PHONY : test/md5_client.c.o
+bin/http_server.c.o:
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/http_server.c.o
+.PHONY : bin/http_server.c.o
 
-test/md5_client.i: test/md5_client.c.i
+bin/http_server.i: bin/http_server.c.i
 
-.PHONY : test/md5_client.i
+.PHONY : bin/http_server.i
 
 # target to preprocess a source file
-test/md5_client.c.i:
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/md5_client.c.i
-.PHONY : test/md5_client.c.i
+bin/http_server.c.i:
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/http_server.c.i
+.PHONY : bin/http_server.c.i
 
-test/md5_client.s: test/md5_client.c.s
+bin/http_server.s: bin/http_server.c.s
 
-.PHONY : test/md5_client.s
+.PHONY : bin/http_server.s
 
 # target to generate assembly for a file
-test/md5_client.c.s:
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/md5_client.c.s
-.PHONY : test/md5_client.c.s
+bin/http_server.c.s:
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/http_server.c.s
+.PHONY : bin/http_server.c.s
 
-test/md5_server.o: test/md5_server.c.o
+bin/md5_client.o: bin/md5_client.c.o
 
-.PHONY : test/md5_server.o
+.PHONY : bin/md5_client.o
 
 # target to build an object file
-test/md5_server.c.o:
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/md5_server.c.o
-.PHONY : test/md5_server.c.o
+bin/md5_client.c.o:
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/md5_client.c.o
+.PHONY : bin/md5_client.c.o
 
-test/md5_server.i: test/md5_server.c.i
+bin/md5_client.i: bin/md5_client.c.i
 
-.PHONY : test/md5_server.i
+.PHONY : bin/md5_client.i
 
 # target to preprocess a source file
-test/md5_server.c.i:
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/md5_server.c.i
-.PHONY : test/md5_server.c.i
+bin/md5_client.c.i:
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/md5_client.c.i
+.PHONY : bin/md5_client.c.i
 
-test/md5_server.s: test/md5_server.c.s
+bin/md5_client.s: bin/md5_client.c.s
 
-.PHONY : test/md5_server.s
+.PHONY : bin/md5_client.s
 
 # target to generate assembly for a file
-test/md5_server.c.s:
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/md5_server.c.s
-.PHONY : test/md5_server.c.s
+bin/md5_client.c.s:
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/md5_client.c.s
+.PHONY : bin/md5_client.c.s
 
-test/prog.o: test/prog.c.o
+bin/md5_server.o: bin/md5_server.c.o
 
-.PHONY : test/prog.o
+.PHONY : bin/md5_server.o
 
 # target to build an object file
-test/prog.c.o:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/prog.c.o
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/prog.c.o
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/prog.c.o
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/prog.c.o
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/prog.c.o
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/prog.c.o
-.PHONY : test/prog.c.o
+bin/md5_server.c.o:
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/md5_server.c.o
+.PHONY : bin/md5_server.c.o
 
-test/prog.i: test/prog.c.i
+bin/md5_server.i: bin/md5_server.c.i
 
-.PHONY : test/prog.i
+.PHONY : bin/md5_server.i
 
 # target to preprocess a source file
-test/prog.c.i:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/prog.c.i
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/prog.c.i
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/prog.c.i
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/prog.c.i
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/prog.c.i
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/prog.c.i
-.PHONY : test/prog.c.i
+bin/md5_server.c.i:
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/md5_server.c.i
+.PHONY : bin/md5_server.c.i
 
-test/prog.s: test/prog.c.s
+bin/md5_server.s: bin/md5_server.c.s
 
-.PHONY : test/prog.s
+.PHONY : bin/md5_server.s
 
 # target to generate assembly for a file
-test/prog.c.s:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/prog.c.s
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/prog.c.s
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/prog.c.s
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/prog.c.s
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/prog.c.s
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/prog.c.s
-.PHONY : test/prog.c.s
+bin/md5_server.c.s:
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/md5_server.c.s
+.PHONY : bin/md5_server.c.s
 
-test/test_cert.o: test/test_cert.c.o
+bin/prog.o: bin/prog.c.o
 
-.PHONY : test/test_cert.o
+.PHONY : bin/prog.o
 
 # target to build an object file
-test/test_cert.c.o:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_cert.c.o
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_cert.c.o
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/test_cert.c.o
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/test_cert.c.o
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/test_cert.c.o
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/test_cert.c.o
-.PHONY : test/test_cert.c.o
+bin/prog.c.o:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/prog.c.o
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/prog.c.o
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/prog.c.o
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/prog.c.o
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/prog.c.o
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/prog.c.o
+.PHONY : bin/prog.c.o
 
-test/test_cert.i: test/test_cert.c.i
+bin/prog.i: bin/prog.c.i
 
-.PHONY : test/test_cert.i
+.PHONY : bin/prog.i
 
 # target to preprocess a source file
-test/test_cert.c.i:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_cert.c.i
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_cert.c.i
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/test_cert.c.i
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/test_cert.c.i
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/test_cert.c.i
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/test_cert.c.i
-.PHONY : test/test_cert.c.i
+bin/prog.c.i:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/prog.c.i
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/prog.c.i
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/prog.c.i
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/prog.c.i
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/prog.c.i
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/prog.c.i
+.PHONY : bin/prog.c.i
 
-test/test_cert.s: test/test_cert.c.s
+bin/prog.s: bin/prog.c.s
 
-.PHONY : test/test_cert.s
+.PHONY : bin/prog.s
 
 # target to generate assembly for a file
-test/test_cert.c.s:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_cert.c.s
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_cert.c.s
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/test_cert.c.s
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/test_cert.c.s
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/test_cert.c.s
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/test_cert.c.s
-.PHONY : test/test_cert.c.s
+bin/prog.c.s:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/prog.c.s
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/prog.c.s
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/prog.c.s
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/prog.c.s
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/prog.c.s
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/prog.c.s
+.PHONY : bin/prog.c.s
 
-test/test_common.o: test/test_common.c.o
+bin/test_cert.o: bin/test_cert.c.o
 
-.PHONY : test/test_common.o
+.PHONY : bin/test_cert.o
 
 # target to build an object file
-test/test_common.c.o:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_common.c.o
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_common.c.o
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/test_common.c.o
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/test_common.c.o
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/test_common.c.o
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/test_common.c.o
-.PHONY : test/test_common.c.o
+bin/test_cert.c.o:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_cert.c.o
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_cert.c.o
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/test_cert.c.o
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/test_cert.c.o
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/test_cert.c.o
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/test_cert.c.o
+.PHONY : bin/test_cert.c.o
 
-test/test_common.i: test/test_common.c.i
+bin/test_cert.i: bin/test_cert.c.i
 
-.PHONY : test/test_common.i
+.PHONY : bin/test_cert.i
 
 # target to preprocess a source file
-test/test_common.c.i:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_common.c.i
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_common.c.i
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/test_common.c.i
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/test_common.c.i
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/test_common.c.i
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/test_common.c.i
-.PHONY : test/test_common.c.i
+bin/test_cert.c.i:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_cert.c.i
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_cert.c.i
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/test_cert.c.i
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/test_cert.c.i
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/test_cert.c.i
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/test_cert.c.i
+.PHONY : bin/test_cert.c.i
 
-test/test_common.s: test/test_common.c.s
+bin/test_cert.s: bin/test_cert.c.s
 
-.PHONY : test/test_common.s
+.PHONY : bin/test_cert.s
 
 # target to generate assembly for a file
-test/test_common.c.s:
-	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/test/test_common.c.s
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_common.c.s
-	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/test/test_common.c.s
-	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/test/test_common.c.s
-	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/test/test_common.c.s
-	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/test/test_common.c.s
-.PHONY : test/test_common.c.s
+bin/test_cert.c.s:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_cert.c.s
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_cert.c.s
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/test_cert.c.s
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/test_cert.c.s
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/test_cert.c.s
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/test_cert.c.s
+.PHONY : bin/test_cert.c.s
+
+bin/test_common.o: bin/test_common.c.o
+
+.PHONY : bin/test_common.o
+
+# target to build an object file
+bin/test_common.c.o:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_common.c.o
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_common.c.o
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/test_common.c.o
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/test_common.c.o
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/test_common.c.o
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/test_common.c.o
+.PHONY : bin/test_common.c.o
+
+bin/test_common.i: bin/test_common.c.i
+
+.PHONY : bin/test_common.i
+
+# target to preprocess a source file
+bin/test_common.c.i:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_common.c.i
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_common.c.i
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/test_common.c.i
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/test_common.c.i
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/test_common.c.i
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/test_common.c.i
+.PHONY : bin/test_common.c.i
+
+bin/test_common.s: bin/test_common.c.s
+
+.PHONY : bin/test_common.s
+
+# target to generate assembly for a file
+bin/test_common.c.s:
+	$(MAKE) -f CMakeFiles/http_client.dir/build.make CMakeFiles/http_client.dir/bin/test_common.c.s
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_common.c.s
+	$(MAKE) -f CMakeFiles/http_server.dir/build.make CMakeFiles/http_server.dir/bin/test_common.c.s
+	$(MAKE) -f CMakeFiles/md5_server.dir/build.make CMakeFiles/md5_server.dir/bin/test_common.c.s
+	$(MAKE) -f CMakeFiles/md5_client.dir/build.make CMakeFiles/md5_client.dir/bin/test_common.c.s
+	$(MAKE) -f CMakeFiles/echo_client.dir/build.make CMakeFiles/echo_client.dir/bin/test_common.c.s
+.PHONY : bin/test_common.c.s
 
 # Help Target
 help:
@@ -1274,6 +1287,8 @@ help:
 	@echo "... test_malo_nopool"
 	@echo "... test_min_heap"
 	@echo "... graph_cubic"
+	@echo "... mini_parse"
+	@echo "... test_hcsi_reader"
 	@echo "... test_frame_rw"
 	@echo "... test_wuf_gquic_be"
 	@echo "... test_ver_nego"
@@ -1295,6 +1310,7 @@ help:
 	@echo "... test_varint"
 	@echo "... test_crypto_gen"
 	@echo "... test_set"
+	@echo "... test_tokgen"
 	@echo "... test_di_nocopy"
 	@echo "... test_streamgen"
 	@echo "... test_ackparse_ietf"
@@ -1306,10 +1322,6 @@ help:
 	@echo "... test_frame_chop"
 	@echo "... test_bw_sampler"
 	@echo "... test_arr"
-	@echo "... mini_parse"
-	@echo "... test_hcsi_reader"
-	@echo "... test_alt_svc_ver"
-	@echo "... test_senhist"
 	@echo "... test_frame_reader"
 	@echo "... test_hkdf"
 	@echo "... test_dec"
@@ -1322,39 +1334,41 @@ help:
 	@echo "... test_conn_close_gquic_be"
 	@echo "... test_rtt"
 	@echo "... test_send_headers"
+	@echo "... test_alt_svc_ver"
+	@echo "... test_senhist"
 	@echo "... test_sfcw"
 	@echo "... test_shi"
 	@echo "... test_qlog"
 	@echo "... test_spi"
 	@echo "... test_streamparse"
 	@echo "... test_trapa"
-	@echo "... test/echo_client.o"
-	@echo "... test/echo_client.i"
-	@echo "... test/echo_client.s"
-	@echo "... test/echo_server.o"
-	@echo "... test/echo_server.i"
-	@echo "... test/echo_server.s"
-	@echo "... test/http_client.o"
-	@echo "... test/http_client.i"
-	@echo "... test/http_client.s"
-	@echo "... test/http_server.o"
-	@echo "... test/http_server.i"
-	@echo "... test/http_server.s"
-	@echo "... test/md5_client.o"
-	@echo "... test/md5_client.i"
-	@echo "... test/md5_client.s"
-	@echo "... test/md5_server.o"
-	@echo "... test/md5_server.i"
-	@echo "... test/md5_server.s"
-	@echo "... test/prog.o"
-	@echo "... test/prog.i"
-	@echo "... test/prog.s"
-	@echo "... test/test_cert.o"
-	@echo "... test/test_cert.i"
-	@echo "... test/test_cert.s"
-	@echo "... test/test_common.o"
-	@echo "... test/test_common.i"
-	@echo "... test/test_common.s"
+	@echo "... bin/echo_client.o"
+	@echo "... bin/echo_client.i"
+	@echo "... bin/echo_client.s"
+	@echo "... bin/echo_server.o"
+	@echo "... bin/echo_server.i"
+	@echo "... bin/echo_server.s"
+	@echo "... bin/http_client.o"
+	@echo "... bin/http_client.i"
+	@echo "... bin/http_client.s"
+	@echo "... bin/http_server.o"
+	@echo "... bin/http_server.i"
+	@echo "... bin/http_server.s"
+	@echo "... bin/md5_client.o"
+	@echo "... bin/md5_client.i"
+	@echo "... bin/md5_client.s"
+	@echo "... bin/md5_server.o"
+	@echo "... bin/md5_server.i"
+	@echo "... bin/md5_server.s"
+	@echo "... bin/prog.o"
+	@echo "... bin/prog.i"
+	@echo "... bin/prog.s"
+	@echo "... bin/test_cert.o"
+	@echo "... bin/test_cert.i"
+	@echo "... bin/test_cert.s"
+	@echo "... bin/test_common.o"
+	@echo "... bin/test_common.i"
+	@echo "... bin/test_common.s"
 .PHONY : help
 
 

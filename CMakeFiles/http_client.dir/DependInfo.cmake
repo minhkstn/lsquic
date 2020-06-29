@@ -4,10 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/http_client.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles/http_client.dir/test/http_client.c.o"
-  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/prog.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles/http_client.dir/test/prog.c.o"
-  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_cert.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles/http_client.dir/test/test_cert.c.o"
-  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_common.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles/http_client.dir/test/test_common.c.o"
+  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/http_client.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles/http_client.dir/bin/http_client.c.o"
+  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/prog.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles/http_client.dir/bin/prog.c.o"
+  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_cert.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles/http_client.dir/bin/test_cert.c.o"
+  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_common.c" "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles/http_client.dir/bin/test_common.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 
@@ -20,7 +20,7 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic/CMakeFiles/lsquic.dir/DependInfo.cmake"
+  "/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src/liblsquic/CMakeFiles/lsquic.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

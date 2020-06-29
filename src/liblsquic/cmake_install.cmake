@@ -1,4 +1,4 @@
-# Install script for directory: /home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic
+# Install script for directory: /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src/liblsquic
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

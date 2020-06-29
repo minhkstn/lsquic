@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/md5_client.dir/test/md5_client.c.o"
-  "CMakeFiles/md5_client.dir/test/prog.c.o"
-  "CMakeFiles/md5_client.dir/test/test_common.c.o"
-  "CMakeFiles/md5_client.dir/test/test_cert.c.o"
+  "CMakeFiles/md5_client.dir/bin/md5_client.c.o"
+  "CMakeFiles/md5_client.dir/bin/prog.c.o"
+  "CMakeFiles/md5_client.dir/bin/test_common.c.o"
+  "CMakeFiles/md5_client.dir/bin/test_cert.c.o"
   "md5_client.pdb"
   "md5_client"
 )

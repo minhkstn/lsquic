@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_SOURCE_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic
+CMAKE_BINARY_DIR = /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch
 
 # Include any dependencies generated for this target.
 include CMakeFiles/echo_server.dir/depend.make
@@ -57,116 +57,116 @@ include CMakeFiles/echo_server.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/echo_server.dir/flags.make
 
-CMakeFiles/echo_server.dir/test/echo_server.c.o: CMakeFiles/echo_server.dir/flags.make
-CMakeFiles/echo_server.dir/test/echo_server.c.o: test/echo_server.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/echo_server.dir/test/echo_server.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/test/echo_server.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/echo_server.c
+CMakeFiles/echo_server.dir/bin/echo_server.c.o: CMakeFiles/echo_server.dir/flags.make
+CMakeFiles/echo_server.dir/bin/echo_server.c.o: bin/echo_server.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/echo_server.dir/bin/echo_server.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/bin/echo_server.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/echo_server.c
 
-CMakeFiles/echo_server.dir/test/echo_server.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/test/echo_server.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/echo_server.c > CMakeFiles/echo_server.dir/test/echo_server.c.i
+CMakeFiles/echo_server.dir/bin/echo_server.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/bin/echo_server.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/echo_server.c > CMakeFiles/echo_server.dir/bin/echo_server.c.i
 
-CMakeFiles/echo_server.dir/test/echo_server.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/test/echo_server.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/echo_server.c -o CMakeFiles/echo_server.dir/test/echo_server.c.s
+CMakeFiles/echo_server.dir/bin/echo_server.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/bin/echo_server.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/echo_server.c -o CMakeFiles/echo_server.dir/bin/echo_server.c.s
 
-CMakeFiles/echo_server.dir/test/echo_server.c.o.requires:
+CMakeFiles/echo_server.dir/bin/echo_server.c.o.requires:
 
-.PHONY : CMakeFiles/echo_server.dir/test/echo_server.c.o.requires
+.PHONY : CMakeFiles/echo_server.dir/bin/echo_server.c.o.requires
 
-CMakeFiles/echo_server.dir/test/echo_server.c.o.provides: CMakeFiles/echo_server.dir/test/echo_server.c.o.requires
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/echo_server.c.o.provides.build
-.PHONY : CMakeFiles/echo_server.dir/test/echo_server.c.o.provides
+CMakeFiles/echo_server.dir/bin/echo_server.c.o.provides: CMakeFiles/echo_server.dir/bin/echo_server.c.o.requires
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/echo_server.c.o.provides.build
+.PHONY : CMakeFiles/echo_server.dir/bin/echo_server.c.o.provides
 
-CMakeFiles/echo_server.dir/test/echo_server.c.o.provides.build: CMakeFiles/echo_server.dir/test/echo_server.c.o
-
-
-CMakeFiles/echo_server.dir/test/prog.c.o: CMakeFiles/echo_server.dir/flags.make
-CMakeFiles/echo_server.dir/test/prog.c.o: test/prog.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/echo_server.dir/test/prog.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/test/prog.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/prog.c
-
-CMakeFiles/echo_server.dir/test/prog.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/test/prog.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/prog.c > CMakeFiles/echo_server.dir/test/prog.c.i
-
-CMakeFiles/echo_server.dir/test/prog.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/test/prog.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/prog.c -o CMakeFiles/echo_server.dir/test/prog.c.s
-
-CMakeFiles/echo_server.dir/test/prog.c.o.requires:
-
-.PHONY : CMakeFiles/echo_server.dir/test/prog.c.o.requires
-
-CMakeFiles/echo_server.dir/test/prog.c.o.provides: CMakeFiles/echo_server.dir/test/prog.c.o.requires
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/prog.c.o.provides.build
-.PHONY : CMakeFiles/echo_server.dir/test/prog.c.o.provides
-
-CMakeFiles/echo_server.dir/test/prog.c.o.provides.build: CMakeFiles/echo_server.dir/test/prog.c.o
+CMakeFiles/echo_server.dir/bin/echo_server.c.o.provides.build: CMakeFiles/echo_server.dir/bin/echo_server.c.o
 
 
-CMakeFiles/echo_server.dir/test/test_common.c.o: CMakeFiles/echo_server.dir/flags.make
-CMakeFiles/echo_server.dir/test/test_common.c.o: test/test_common.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/echo_server.dir/test/test_common.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/test/test_common.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_common.c
+CMakeFiles/echo_server.dir/bin/prog.c.o: CMakeFiles/echo_server.dir/flags.make
+CMakeFiles/echo_server.dir/bin/prog.c.o: bin/prog.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/echo_server.dir/bin/prog.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/bin/prog.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/prog.c
 
-CMakeFiles/echo_server.dir/test/test_common.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/test/test_common.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_common.c > CMakeFiles/echo_server.dir/test/test_common.c.i
+CMakeFiles/echo_server.dir/bin/prog.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/bin/prog.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/prog.c > CMakeFiles/echo_server.dir/bin/prog.c.i
 
-CMakeFiles/echo_server.dir/test/test_common.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/test/test_common.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_common.c -o CMakeFiles/echo_server.dir/test/test_common.c.s
+CMakeFiles/echo_server.dir/bin/prog.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/bin/prog.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/prog.c -o CMakeFiles/echo_server.dir/bin/prog.c.s
 
-CMakeFiles/echo_server.dir/test/test_common.c.o.requires:
+CMakeFiles/echo_server.dir/bin/prog.c.o.requires:
 
-.PHONY : CMakeFiles/echo_server.dir/test/test_common.c.o.requires
+.PHONY : CMakeFiles/echo_server.dir/bin/prog.c.o.requires
 
-CMakeFiles/echo_server.dir/test/test_common.c.o.provides: CMakeFiles/echo_server.dir/test/test_common.c.o.requires
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_common.c.o.provides.build
-.PHONY : CMakeFiles/echo_server.dir/test/test_common.c.o.provides
+CMakeFiles/echo_server.dir/bin/prog.c.o.provides: CMakeFiles/echo_server.dir/bin/prog.c.o.requires
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/prog.c.o.provides.build
+.PHONY : CMakeFiles/echo_server.dir/bin/prog.c.o.provides
 
-CMakeFiles/echo_server.dir/test/test_common.c.o.provides.build: CMakeFiles/echo_server.dir/test/test_common.c.o
+CMakeFiles/echo_server.dir/bin/prog.c.o.provides.build: CMakeFiles/echo_server.dir/bin/prog.c.o
 
 
-CMakeFiles/echo_server.dir/test/test_cert.c.o: CMakeFiles/echo_server.dir/flags.make
-CMakeFiles/echo_server.dir/test/test_cert.c.o: test/test_cert.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/echo_server.dir/test/test_cert.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/test/test_cert.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_cert.c
+CMakeFiles/echo_server.dir/bin/test_common.c.o: CMakeFiles/echo_server.dir/flags.make
+CMakeFiles/echo_server.dir/bin/test_common.c.o: bin/test_common.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/echo_server.dir/bin/test_common.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/bin/test_common.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_common.c
 
-CMakeFiles/echo_server.dir/test/test_cert.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/test/test_cert.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_cert.c > CMakeFiles/echo_server.dir/test/test_cert.c.i
+CMakeFiles/echo_server.dir/bin/test_common.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/bin/test_common.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_common.c > CMakeFiles/echo_server.dir/bin/test_common.c.i
 
-CMakeFiles/echo_server.dir/test/test_cert.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/test/test_cert.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic/test/test_cert.c -o CMakeFiles/echo_server.dir/test/test_cert.c.s
+CMakeFiles/echo_server.dir/bin/test_common.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/bin/test_common.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_common.c -o CMakeFiles/echo_server.dir/bin/test_common.c.s
 
-CMakeFiles/echo_server.dir/test/test_cert.c.o.requires:
+CMakeFiles/echo_server.dir/bin/test_common.c.o.requires:
 
-.PHONY : CMakeFiles/echo_server.dir/test/test_cert.c.o.requires
+.PHONY : CMakeFiles/echo_server.dir/bin/test_common.c.o.requires
 
-CMakeFiles/echo_server.dir/test/test_cert.c.o.provides: CMakeFiles/echo_server.dir/test/test_cert.c.o.requires
-	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/test/test_cert.c.o.provides.build
-.PHONY : CMakeFiles/echo_server.dir/test/test_cert.c.o.provides
+CMakeFiles/echo_server.dir/bin/test_common.c.o.provides: CMakeFiles/echo_server.dir/bin/test_common.c.o.requires
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_common.c.o.provides.build
+.PHONY : CMakeFiles/echo_server.dir/bin/test_common.c.o.provides
 
-CMakeFiles/echo_server.dir/test/test_cert.c.o.provides.build: CMakeFiles/echo_server.dir/test/test_cert.c.o
+CMakeFiles/echo_server.dir/bin/test_common.c.o.provides.build: CMakeFiles/echo_server.dir/bin/test_common.c.o
+
+
+CMakeFiles/echo_server.dir/bin/test_cert.c.o: CMakeFiles/echo_server.dir/flags.make
+CMakeFiles/echo_server.dir/bin/test_cert.c.o: bin/test_cert.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/echo_server.dir/bin/test_cert.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/echo_server.dir/bin/test_cert.c.o   -c /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_cert.c
+
+CMakeFiles/echo_server.dir/bin/test_cert.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/echo_server.dir/bin/test_cert.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_cert.c > CMakeFiles/echo_server.dir/bin/test_cert.c.i
+
+CMakeFiles/echo_server.dir/bin/test_cert.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/echo_server.dir/bin/test_cert.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/bin/test_cert.c -o CMakeFiles/echo_server.dir/bin/test_cert.c.s
+
+CMakeFiles/echo_server.dir/bin/test_cert.c.o.requires:
+
+.PHONY : CMakeFiles/echo_server.dir/bin/test_cert.c.o.requires
+
+CMakeFiles/echo_server.dir/bin/test_cert.c.o.provides: CMakeFiles/echo_server.dir/bin/test_cert.c.o.requires
+	$(MAKE) -f CMakeFiles/echo_server.dir/build.make CMakeFiles/echo_server.dir/bin/test_cert.c.o.provides.build
+.PHONY : CMakeFiles/echo_server.dir/bin/test_cert.c.o.provides
+
+CMakeFiles/echo_server.dir/bin/test_cert.c.o.provides.build: CMakeFiles/echo_server.dir/bin/test_cert.c.o
 
 
 # Object files for target echo_server
 echo_server_OBJECTS = \
-"CMakeFiles/echo_server.dir/test/echo_server.c.o" \
-"CMakeFiles/echo_server.dir/test/prog.c.o" \
-"CMakeFiles/echo_server.dir/test/test_common.c.o" \
-"CMakeFiles/echo_server.dir/test/test_cert.c.o"
+"CMakeFiles/echo_server.dir/bin/echo_server.c.o" \
+"CMakeFiles/echo_server.dir/bin/prog.c.o" \
+"CMakeFiles/echo_server.dir/bin/test_common.c.o" \
+"CMakeFiles/echo_server.dir/bin/test_cert.c.o"
 
 # External object files for target echo_server
 echo_server_EXTERNAL_OBJECTS =
 
-echo_server: CMakeFiles/echo_server.dir/test/echo_server.c.o
-echo_server: CMakeFiles/echo_server.dir/test/prog.c.o
-echo_server: CMakeFiles/echo_server.dir/test/test_common.c.o
-echo_server: CMakeFiles/echo_server.dir/test/test_cert.c.o
+echo_server: CMakeFiles/echo_server.dir/bin/echo_server.c.o
+echo_server: CMakeFiles/echo_server.dir/bin/prog.c.o
+echo_server: CMakeFiles/echo_server.dir/bin/test_common.c.o
+echo_server: CMakeFiles/echo_server.dir/bin/test_cert.c.o
 echo_server: CMakeFiles/echo_server.dir/build.make
 echo_server: src/liblsquic/liblsquic.a
 echo_server: /usr/lib/x86_64-linux-gnu/libevent.a
@@ -174,7 +174,7 @@ echo_server: /home/minh/HTTP3_QUIC/LSQUIC/boringssl/ssl/libssl.a
 echo_server: /home/minh/HTTP3_QUIC/LSQUIC/boringssl/crypto/libcrypto.a
 echo_server: /usr/lib/x86_64-linux-gnu/libz.a
 echo_server: CMakeFiles/echo_server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable echo_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable echo_server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/echo_server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -182,10 +182,10 @@ CMakeFiles/echo_server.dir/build: echo_server
 
 .PHONY : CMakeFiles/echo_server.dir/build
 
-CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/test/echo_server.c.o.requires
-CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/test/prog.c.o.requires
-CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/test/test_common.c.o.requires
-CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/test/test_cert.c.o.requires
+CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/bin/echo_server.c.o.requires
+CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/bin/prog.c.o.requires
+CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/bin/test_common.c.o.requires
+CMakeFiles/echo_server.dir/requires: CMakeFiles/echo_server.dir/bin/test_cert.c.o.requires
 
 .PHONY : CMakeFiles/echo_server.dir/requires
 
@@ -194,6 +194,6 @@ CMakeFiles/echo_server.dir/clean:
 .PHONY : CMakeFiles/echo_server.dir/clean
 
 CMakeFiles/echo_server.dir/depend:
-	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic /home/minh/HTTP3_QUIC/LSQUIC/lsquic/CMakeFiles/echo_server.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch /home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/CMakeFiles/echo_server.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/echo_server.dir/depend
 

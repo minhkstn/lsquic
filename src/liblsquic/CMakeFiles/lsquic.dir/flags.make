@@ -6,7 +6,7 @@ C_FLAGS =   -DLSQUIC_DEBUG_NEXT_ADV_TICK=1 -Wall -Wextra -Wno-unused-parameter -
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic -I/home/minh/HTTP3_QUIC/LSQUIC/boringssl/include -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic/include -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic/ls-qpack -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic/src/liblsquic/../lshpack 
+C_INCLUDES = -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src/liblsquic -I/home/minh/HTTP3_QUIC/LSQUIC/boringssl/include -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/include -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src/liblsquic/ls-qpack -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/src/liblsquic/../lshpack 
 
 # Custom flags: src/liblsquic/CMakeFiles/lsquic.dir/ls-qpack/lsqpack.c.o_FLAGS = -Wno-uninitialized
 

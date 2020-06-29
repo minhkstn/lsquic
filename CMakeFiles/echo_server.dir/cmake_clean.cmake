@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/echo_server.dir/test/echo_server.c.o"
-  "CMakeFiles/echo_server.dir/test/prog.c.o"
-  "CMakeFiles/echo_server.dir/test/test_common.c.o"
-  "CMakeFiles/echo_server.dir/test/test_cert.c.o"
+  "CMakeFiles/echo_server.dir/bin/echo_server.c.o"
+  "CMakeFiles/echo_server.dir/bin/prog.c.o"
+  "CMakeFiles/echo_server.dir/bin/test_common.c.o"
+  "CMakeFiles/echo_server.dir/bin/test_cert.c.o"
   "echo_server.pdb"
   "echo_server"
 )

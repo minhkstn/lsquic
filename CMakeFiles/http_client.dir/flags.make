@@ -6,5 +6,5 @@ C_FLAGS =   -DLSQUIC_DEBUG_NEXT_ADV_TICK=1 -Wall -Wextra -Wno-unused-parameter -
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic -I/home/minh/HTTP3_QUIC/LSQUIC/boringssl/include -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic/include 
+C_INCLUDES = -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch -I/home/minh/HTTP3_QUIC/LSQUIC/boringssl/include -I/home/minh/HTTP3_QUIC/LSQUIC/lsquic_minh_kstn_branch/include 
 

@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/http_server.dir/test/http_server.c.o"
-  "CMakeFiles/http_server.dir/test/prog.c.o"
-  "CMakeFiles/http_server.dir/test/test_common.c.o"
-  "CMakeFiles/http_server.dir/test/test_cert.c.o"
+  "CMakeFiles/http_server.dir/bin/http_server.c.o"
+  "CMakeFiles/http_server.dir/bin/prog.c.o"
+  "CMakeFiles/http_server.dir/bin/test_common.c.o"
+  "CMakeFiles/http_server.dir/bin/test_cert.c.o"
   "http_server.pdb"
   "http_server"
 )
