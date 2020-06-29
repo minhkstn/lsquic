@@ -135,7 +135,9 @@ force_close_conn (lsquic_engine_t *engine, lsquic_conn_t *conn);
 #define ENGINE_CALLS_INCR(e)
 #endif
 
-/* Nested calls to LSQUIC are not supported */
+/* Nested calls to some LSQUIC functions are not supported.  Functions that
+ * iterate over connections cannot be nested.
+ */
 #define ENGINE_IN(e) do {                               \
     assert(!((e)->pub.enp_flags & ENPUB_PROC));         \
     (e)->pub.enp_flags |= ENPUB_PROC;                   \
@@ -270,7 +272,7 @@ struct lsquic_engine
     int                                last_tick_diff;
 #endif
     struct crand                       crand;
-    EVP_AEAD_CTX                       retry_aead_ctx;
+    EVP_AEAD_CTX                       retry_aead_ctx[N_IETF_RETRY_VERSIONS];
 };
 
 
@@ -483,6 +485,7 @@ lsquic_engine_new (unsigned flags,
 {
     lsquic_engine_t *engine;
     size_t alpn_len;
+    unsigned i;
     char err_buf[100];
 
     if (!api->ea_packets_out)
@@ -691,14 +694,17 @@ lsquic_engine_new (unsigned flags,
 #if LSQUIC_CONN_STATS
     engine->stats_fh = api->ea_stats_fh;
 #endif
-    if (1 != EVP_AEAD_CTX_init(&engine->retry_aead_ctx, EVP_aead_aes_128_gcm(),
-                            IETF_RETRY_KEY_BUF, IETF_RETRY_KEY_SZ, 16, NULL))
-    {
-        LSQ_ERROR("could not initialize retry AEAD ctx");
-        lsquic_engine_destroy(engine);
-        return NULL;
-    }
-    engine->pub.enp_retry_aead_ctx = &engine->retry_aead_ctx;
+    for (i = 0; i < sizeof(engine->retry_aead_ctx)
+                                    / sizeof(engine->retry_aead_ctx[0]); ++i)
+        if (1 != EVP_AEAD_CTX_init(&engine->retry_aead_ctx[i],
+                        EVP_aead_aes_128_gcm(), lsquic_retry_key_buf[i],
+                        IETF_RETRY_KEY_SZ, 16, NULL))
+        {
+            LSQ_ERROR("could not initialize retry AEAD ctx #%u", i);
+            lsquic_engine_destroy(engine);
+            return NULL;
+        }
+    engine->pub.enp_retry_aead_ctx = engine->retry_aead_ctx;
 
     LSQ_INFO("instantiated engine");
     return engine;
@@ -1421,6 +1427,7 @@ lsquic_engine_destroy (lsquic_engine_t *engine)
 {
     struct lsquic_hash_elem *el;
     lsquic_conn_t *conn;
+    unsigned i;
 
     LSQ_DEBUG("destroying engine");
 #ifndef NDEBUG
@@ -1515,8 +1522,9 @@ lsquic_engine_destroy (lsquic_engine_t *engine)
 #if LSQUIC_COUNT_ENGINE_CALLS
     LSQ_NOTICE("number of calls into the engine: %lu", engine->n_engine_calls);
 #endif
-    if (engine->pub.enp_retry_aead_ctx)
-        EVP_AEAD_CTX_cleanup(engine->pub.enp_retry_aead_ctx);
+    for (i = 0; i < sizeof(engine->retry_aead_ctx)
+                                    / sizeof(engine->retry_aead_ctx[0]); ++i)
+        EVP_AEAD_CTX_cleanup(&engine->pub.enp_retry_aead_ctx[i]);
     free(engine->pub.enp_alpn);
     free(engine);
 }
@@ -1579,7 +1587,7 @@ lsquic_engine_connect (lsquic_engine_t *engine, enum lsquic_version version,
     unsigned flags, versions;
     int is_ipv4;
 
-    ENGINE_IN(engine);
+    ENGINE_CALLS_INCR(engine);
 
     if (engine->flags & ENG_SERVER)
     {
@@ -1645,12 +1653,14 @@ lsquic_engine_connect (lsquic_engine_t *engine, enum lsquic_version version,
                                  callbacks */
                              )));
     conn->cn_flags |= LSCONN_HASHED;
-    lsquic_mh_insert(&engine->conns_tickable, conn, conn->cn_last_ticked);
-    engine_incref_conn(conn, LSCONN_TICKABLE);
+    if (!(conn->cn_flags & LSCONN_TICKABLE))
+    {
+        lsquic_mh_insert(&engine->conns_tickable, conn, conn->cn_last_ticked);
+        engine_incref_conn(conn, LSCONN_TICKABLE);
+    }
     lsquic_conn_set_ctx(conn, conn_ctx);
     conn->cn_if->ci_client_call_on_new(conn);
   end:
-    ENGINE_OUT(engine);
     return conn;
   err:
     conn = NULL;
@@ -2150,6 +2160,20 @@ close_conn_on_send_error (struct lsquic_engine *engine,
 }
 
 
+static void
+apply_hp (struct conns_out_iter *iter)
+{
+    struct lsquic_conn *conn;
+
+    TAILQ_FOREACH(conn, &iter->coi_active_list, cn_next_out)
+        if (conn->cn_esf_c->esf_flush_encryption && conn->cn_enc_session)
+            conn->cn_esf_c->esf_flush_encryption(conn->cn_enc_session);
+    TAILQ_FOREACH(conn, &iter->coi_inactive_list, cn_next_out)
+        if (conn->cn_esf_c->esf_flush_encryption && conn->cn_enc_session)
+            conn->cn_esf_c->esf_flush_encryption(conn->cn_enc_session);
+}
+
+
 static unsigned
 send_batch (lsquic_engine_t *engine, const struct send_batch_ctx *sb_ctx,
             unsigned n_to_send)
@@ -2161,6 +2185,7 @@ send_batch (lsquic_engine_t *engine, const struct send_batch_ctx *sb_ctx,
     CONST_BATCH struct out_batch *const batch = sb_ctx->batch;
     struct lsquic_packet_out *CONST_BATCH *packet_out, *CONST_BATCH *end;
 
+    apply_hp(sb_ctx->conns_iter);
 #if CAN_LOSE_PACKETS
     if (engine->flags & ENG_LOSE_PACKETS)
         lose_matching_packets(engine, batch, n_to_send);

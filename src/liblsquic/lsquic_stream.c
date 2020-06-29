@@ -783,10 +783,13 @@ static int
 stream_readable_discard (struct lsquic_stream *stream)
 {
     struct data_frame *data_frame;
+    uint64_t toread;
 
     while ((data_frame = stream->data_in->di_if->di_get_frame(
                                     stream->data_in, stream->read_offset)))
     {
+        toread = data_frame->df_size - data_frame->df_read_off;
+        stream->read_offset += toread;
         data_frame->df_read_off = data_frame->df_size;
         stream->data_in->di_if->di_frame_done(stream->data_in, data_frame);
     }
@@ -1748,6 +1751,14 @@ void
 lsquic_stream_received_goaway (lsquic_stream_t *stream)
 {
     SM_HISTORY_APPEND(stream, SHE_GOAWAY_IN);
+
+    if (stream->stream_flags & STREAM_GOAWAY_IN)
+    {
+        LSQ_DEBUG("ignore duplicate GOAWAY");
+        return;
+    }
+    stream->stream_flags |= STREAM_GOAWAY_IN;
+
     if (0 == stream->read_offset &&
                             stream->data_in->di_if->di_empty(stream->data_in))
         fake_reset_unused_stream(stream);       /* Normal condition */

@@ -123,6 +123,12 @@ struct enc_session_funcs_common
     void
     (*esf_set_conn) (enc_session_t *, struct lsquic_conn *);
 
+    /* Optional.  This function gets called after packets are encrypted,
+     * batched, and are about to be sent.
+     */
+    void
+    (*esf_flush_encryption) (enc_session_t *);
+
     unsigned
     esf_tag_len;
 };
@@ -334,6 +340,7 @@ extern const struct enc_session_funcs_iquic lsquic_enc_session_iquic_ietf_v1;
 #define select_esf_common_by_ver(ver) ( \
     ver == LSQVER_ID27 ? &lsquic_enc_session_common_ietf_v1 : \
     ver == LSQVER_ID28 ? &lsquic_enc_session_common_ietf_v1 : \
+    ver == LSQVER_ID29 ? &lsquic_enc_session_common_ietf_v1 : \
     ver == LSQVER_VERNEG ? &lsquic_enc_session_common_ietf_v1 : \
     ver == LSQVER_050 ? &lsquic_enc_session_common_gquic_2 : \
     &lsquic_enc_session_common_gquic_1 )

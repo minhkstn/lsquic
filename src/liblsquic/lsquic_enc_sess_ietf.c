@@ -73,7 +73,8 @@ static const struct alpn_map {
 } s_h3_alpns[] = {
     {   LSQVER_ID27, (unsigned char *) "\x05h3-27",     },
     {   LSQVER_ID28, (unsigned char *) "\x05h3-28",     },
-    {   LSQVER_VERNEG, (unsigned char *) "\x05h3-28",     },
+    {   LSQVER_ID29, (unsigned char *) "\x05h3-29",     },
+    {   LSQVER_VERNEG, (unsigned char *) "\x05h3-29",     },
 };
 
 struct enc_sess_iquic;
@@ -105,22 +106,26 @@ no_sess_ticket (enum alarm_id alarm_id, void *ctx,
                                   lsquic_time_t expiry, lsquic_time_t now);
 
 
-typedef void (*gen_hp_mask_f)(struct enc_sess_iquic *,
-    const struct header_prot *, unsigned rw,
-    const unsigned char *sample, unsigned char mask[16]);
+#define SAMPLE_SZ 16
 
+typedef void (*gen_hp_mask_f)(struct enc_sess_iquic *,
+    struct header_prot *, unsigned rw,
+    const unsigned char *sample, unsigned char *mask, size_t sz);
+
+#define CHACHA20_KEY_LENGTH 32
 
 struct header_prot
 {
-    const EVP_CIPHER   *hp_cipher;
     gen_hp_mask_f       hp_gen_mask;
     enum enc_level      hp_enc_level;
     enum {
         HP_CAN_READ  = 1 << 0,
         HP_CAN_WRITE = 1 << 1,
     }                   hp_flags;
-    unsigned            hp_sz;
-    unsigned char       hp_buf[2][EVP_MAX_KEY_LENGTH];
+    union {
+        EVP_CIPHER_CTX      cipher_ctx[2];                  /* AES */
+        unsigned char       buf[2][CHACHA20_KEY_LENGTH];    /* ChaCha */
+    }                   hp_u;
 };
 
 #define header_prot_inited(hp_, rw_) ((hp_)->hp_flags & (1 << (rw_)))
@@ -176,20 +181,6 @@ init_crypto_ctx (struct crypto_ctx *crypto_ctx, const EVP_MD *md,
 
 
 static void
-derive_hp_secrets (struct header_prot *hp, const EVP_MD *md,
-    const EVP_AEAD *aead, size_t secret_sz,
-    const unsigned char *client_secret, const unsigned char *server_secret)
-{
-    hp->hp_sz = EVP_AEAD_key_length(aead);
-    hp->hp_flags = HP_CAN_READ | HP_CAN_WRITE;
-    lsquic_qhkdf_expand(md, client_secret, secret_sz, PN_LABEL, PN_LABEL_SZ,
-        hp->hp_buf[0], hp->hp_sz);
-    lsquic_qhkdf_expand(md, server_secret, secret_sz, PN_LABEL, PN_LABEL_SZ,
-        hp->hp_buf[1], hp->hp_sz);
-}
-
-
-static void
 cleanup_crypto_ctx (struct crypto_ctx *crypto_ctx)
 {
     if (crypto_ctx->yk_flags & YK_INITED)
@@ -199,6 +190,8 @@ cleanup_crypto_ctx (struct crypto_ctx *crypto_ctx)
     }
 }
 
+
+#define HP_BATCH_SIZE 8
 
 struct enc_sess_iquic
 {
@@ -274,23 +267,24 @@ struct enc_sess_iquic
     struct lsquic_alarmset
                         *esi_alset;
     unsigned             esi_max_streams_uni;
+    unsigned             esi_hp_batch_idx;
+    unsigned             esi_hp_batch_packno_len[HP_BATCH_SIZE];
+    unsigned             esi_hp_batch_packno_off[HP_BATCH_SIZE];
+    struct lsquic_packet_out *
+                         esi_hp_batch_packets[HP_BATCH_SIZE];
+    unsigned char        esi_hp_batch_samples[HP_BATCH_SIZE][SAMPLE_SZ];
 };
 
 
 static void
 gen_hp_mask_aes (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp, unsigned rw,
-        const unsigned char *sample, unsigned char mask[EVP_MAX_BLOCK_LENGTH])
+        struct header_prot *hp, unsigned rw,
+        const unsigned char *sample, unsigned char *mask, size_t sz)
 {
-    EVP_CIPHER_CTX hp_ctx;
     int out_len;
 
-    EVP_CIPHER_CTX_init(&hp_ctx);
-    if (EVP_EncryptInit_ex(&hp_ctx, hp->hp_cipher, NULL, hp->hp_buf[rw], 0)
-        && EVP_EncryptUpdate(&hp_ctx, mask, &out_len, sample, 16))
-    {
-        assert(out_len >= 5);
-    }
+    if (EVP_EncryptUpdate(&hp->hp_u.cipher_ctx[rw], mask, &out_len, sample, sz))
+        assert(out_len >= (int) sz);
     else
     {
         LSQ_WARN("cannot generate hp mask, error code: %"PRIu32,
@@ -298,15 +292,13 @@ gen_hp_mask_aes (struct enc_sess_iquic *enc_sess,
         enc_sess->esi_conn->cn_if->ci_internal_error(enc_sess->esi_conn,
             "cannot generate hp mask, error code: %"PRIu32, ERR_get_error());
     }
-
-    (void) EVP_CIPHER_CTX_cleanup(&hp_ctx);
 }
 
 
 static void
 gen_hp_mask_chacha20 (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp, unsigned rw,
-        const unsigned char *sample, unsigned char mask[EVP_MAX_BLOCK_LENGTH])
+        struct header_prot *hp, unsigned rw,
+        const unsigned char *sample, unsigned char *mask, size_t sz)
 {
     const uint8_t *nonce;
     uint32_t counter;
@@ -318,19 +310,17 @@ gen_hp_mask_chacha20 (struct enc_sess_iquic *enc_sess,
 #endif
     nonce = sample + sizeof(counter);
     CRYPTO_chacha_20(mask, (unsigned char [5]) { 0, 0, 0, 0, 0, }, 5,
-                                        hp->hp_buf[rw], nonce, counter);
+                                        hp->hp_u.buf[rw], nonce, counter);
 }
 
 
 static void
-apply_hp (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp,
-        unsigned char *dst, unsigned packno_off, unsigned packno_len)
+apply_hp (struct enc_sess_iquic *enc_sess, struct header_prot *hp,
+        unsigned char *dst, const unsigned char *mask,
+        unsigned packno_off, unsigned packno_len)
 {
-    unsigned char mask[EVP_MAX_BLOCK_LENGTH];
     char mask_str[5 * 2 + 1];
 
-    hp->hp_gen_mask(enc_sess, hp, 1, dst + packno_off + 4, mask);
     LSQ_DEBUG("apply header protection using mask %s",
                                                 HEXSTR(mask, 5, mask_str));
     if (enc_sess->esi_flags & ESI_SEND_QL_BITS)
@@ -351,6 +341,64 @@ apply_hp (struct enc_sess_iquic *enc_sess,
     default:
         dst[packno_off + 0] ^= mask[1];
     }
+}
+
+
+static void
+apply_hp_immediately (struct enc_sess_iquic *enc_sess,
+        struct header_prot *hp, struct lsquic_packet_out *packet_out,
+        unsigned packno_off, unsigned packno_len)
+{
+    unsigned char mask[SAMPLE_SZ];
+
+    hp->hp_gen_mask(enc_sess, hp, 1,
+                    packet_out->po_enc_data + packno_off + 4, mask, SAMPLE_SZ);
+    apply_hp(enc_sess, hp, packet_out->po_enc_data, mask, packno_off,
+                                                                packno_len);
+#ifndef NDEBUG
+    packet_out->po_lflags |= POL_HEADER_PROT;
+#endif
+}
+
+
+static void
+flush_hp_batch (struct enc_sess_iquic *enc_sess)
+{
+    unsigned i;
+    unsigned char mask[HP_BATCH_SIZE][SAMPLE_SZ];
+
+    enc_sess->esi_hp.hp_gen_mask(enc_sess, &enc_sess->esi_hp, 1,
+                        (unsigned char *) enc_sess->esi_hp_batch_samples,
+                        (unsigned char *) mask,
+                        enc_sess->esi_hp_batch_idx * SAMPLE_SZ);
+    for (i = 0; i < enc_sess->esi_hp_batch_idx; ++i)
+    {
+        apply_hp(enc_sess, &enc_sess->esi_hp,
+            enc_sess->esi_hp_batch_packets[i]->po_enc_data,
+            mask[i],
+            enc_sess->esi_hp_batch_packno_off[i],
+            enc_sess->esi_hp_batch_packno_len[i]);
+#ifndef NDEBUG
+            enc_sess->esi_hp_batch_packets[i]->po_lflags |= POL_HEADER_PROT;
+#endif
+    }
+    enc_sess->esi_hp_batch_idx = 0;
+}
+
+
+static void
+apply_hp_batch (struct enc_sess_iquic *enc_sess,
+        struct header_prot *hp, struct lsquic_packet_out *packet_out,
+        unsigned packno_off, unsigned packno_len)
+{
+    memcpy(enc_sess->esi_hp_batch_samples[enc_sess->esi_hp_batch_idx],
+                        packet_out->po_enc_data + packno_off + 4, SAMPLE_SZ);
+    enc_sess->esi_hp_batch_packno_off[enc_sess->esi_hp_batch_idx] = packno_off;
+    enc_sess->esi_hp_batch_packno_len[enc_sess->esi_hp_batch_idx] = packno_len;
+    enc_sess->esi_hp_batch_packets[enc_sess->esi_hp_batch_idx] = packet_out;
+    ++enc_sess->esi_hp_batch_idx;
+    if (enc_sess->esi_hp_batch_idx == HP_BATCH_SIZE)
+        flush_hp_batch(enc_sess);
 }
 
 
@@ -381,17 +429,17 @@ decode_packno (lsquic_packno_t max_packno, lsquic_packno_t packno,
 
 static lsquic_packno_t
 strip_hp (struct enc_sess_iquic *enc_sess,
-        const struct header_prot *hp,
+        struct header_prot *hp,
         const unsigned char *iv, unsigned char *dst, unsigned packno_off,
         unsigned *packno_len)
 {
     enum packnum_space pns;
     lsquic_packno_t packno;
     unsigned shift;
-    unsigned char mask[EVP_MAX_BLOCK_LENGTH];
+    unsigned char mask[SAMPLE_SZ];
     char mask_str[5 * 2 + 1];
 
-    hp->hp_gen_mask(enc_sess, hp, 0, iv, mask);
+    hp->hp_gen_mask(enc_sess, hp, 0, iv, mask, SAMPLE_SZ);
     LSQ_DEBUG("strip header protection using mask %s",
                                                 HEXSTR(mask, 5, mask_str));
     if (enc_sess->esi_flags & ESI_RECV_QL_BITS)
@@ -891,30 +939,23 @@ log_crypto_pair (const struct enc_sess_iquic *enc_sess,
 }
 
 
-static void
-log_hp (const struct enc_sess_iquic *enc_sess,
-                    const struct header_prot *hp, const char *name)
-{
-    char hexbuf[EVP_MAX_MD_SIZE * 2 + 1];
-    LSQ_DEBUG("read %s hp: %s", name,
-        HEXSTR(hp->hp_buf[0], hp->hp_sz, hexbuf));
-    LSQ_DEBUG("write %s hp: %s", name,
-        HEXSTR(hp->hp_buf[1], hp->hp_sz, hexbuf));
-}
-
-
 /* [draft-ietf-quic-tls-12] Section 5.3.2 */
 static int
 setup_handshake_keys (struct enc_sess_iquic *enc_sess, const lsquic_cid_t *cid)
 {
     const EVP_MD *const md = EVP_sha256();
     const EVP_AEAD *const aead = EVP_aead_aes_128_gcm();
+    /* [draft-ietf-quic-tls-12] Section 5.6.1: AEAD_AES_128_GCM implies
+     * 128-bit AES-CTR.
+     */
+    const EVP_CIPHER *const cipher = EVP_aes_128_ecb();
     struct crypto_ctx_pair *pair;
     struct header_prot *hp;
-    size_t hsk_secret_sz;
-    unsigned cliser;
+    size_t hsk_secret_sz, key_len;
+    unsigned cliser, i;
     unsigned char hsk_secret[EVP_MAX_MD_SIZE];
     unsigned char secret[2][SHA256_DIGEST_LENGTH];  /* client, server */
+    unsigned char key[2][EVP_MAX_KEY_LENGTH];
     char hexbuf[EVP_MAX_MD_SIZE * 2 + 1];
 
     if (!enc_sess->esi_hsk_pairs)
@@ -935,7 +976,8 @@ setup_handshake_keys (struct enc_sess_iquic *enc_sess, const lsquic_cid_t *cid)
     hp = &enc_sess->esi_hsk_hps[ENC_LEV_CLEAR];
 
     HKDF_extract(hsk_secret, &hsk_secret_sz, md, cid->idbuf, cid->len,
-                                                        HSK_SALT, HSK_SALT_SZ);
+                    enc_sess->esi_conn->cn_version < LSQVER_ID29
+                    ? HSK_SALT_PRE29 : HSK_SALT, HSK_SALT_SZ);
     if (enc_sess->esi_flags & ESI_LOG_SECRETS)
     {
         LSQ_DEBUG("handshake salt: %s", HEXSTR(HSK_SALT, HSK_SALT_SZ, hexbuf));
@@ -963,18 +1005,29 @@ setup_handshake_keys (struct enc_sess_iquic *enc_sess, const lsquic_cid_t *cid)
                 sizeof(secret[1]), rw2dir(cliser)))
         goto err;
 
-    /* [draft-ietf-quic-tls-12] Section 5.6.1: AEAD_AES_128_GCM implies
-     * 128-bit AES-CTR.
-     */
-    hp->hp_cipher = EVP_aes_128_ecb();
     hp->hp_gen_mask = gen_hp_mask_aes;
     hp->hp_enc_level = ENC_LEV_CLEAR;
-    derive_hp_secrets(hp, md, aead, sizeof(secret[0]), secret[!cliser], secret[cliser]);
-
+    key_len = EVP_AEAD_key_length(aead);
+    lsquic_qhkdf_expand(md, secret[!cliser], sizeof(secret[0]), PN_LABEL,
+        PN_LABEL_SZ, key[0], key_len);
+    lsquic_qhkdf_expand(md, secret[cliser], sizeof(secret[0]), PN_LABEL,
+        PN_LABEL_SZ, key[1], key_len);
     if (enc_sess->esi_flags & ESI_LOG_SECRETS)
     {
         log_crypto_pair(enc_sess, pair, "handshake");
-        log_hp(enc_sess, hp, "handshake");
+        LSQ_DEBUG("read handshake hp: %s", HEXSTR(key[0], key_len, hexbuf));
+        LSQ_DEBUG("write handshake hp: %s", HEXSTR(key[1], key_len, hexbuf));
+    }
+    for (i = 0; i < 2; ++i)
+    {
+        EVP_CIPHER_CTX_init(&hp->hp_u.cipher_ctx[i]);
+        if (EVP_EncryptInit_ex(&hp->hp_u.cipher_ctx[i], cipher, NULL, key[i], 0))
+            hp->hp_flags |= 1 << i;
+        else
+        {
+            LSQ_ERROR("%s: cannot initialize cipher %u", __func__, i);
+            goto err;
+        }
     }
 
     return 0;
@@ -987,9 +1040,22 @@ setup_handshake_keys (struct enc_sess_iquic *enc_sess, const lsquic_cid_t *cid)
 
 
 static void
+cleanup_hp (struct header_prot *hp)
+{
+    unsigned rw;
+
+    if (hp->hp_gen_mask == gen_hp_mask_aes)
+        for (rw = 0; rw < 2; ++rw)
+            if (hp->hp_flags & (1 << rw))
+                (void) EVP_CIPHER_CTX_cleanup(&hp->hp_u.cipher_ctx[rw]);
+}
+
+
+static void
 free_handshake_keys (struct enc_sess_iquic *enc_sess)
 {
     struct crypto_ctx_pair *pair;
+    unsigned i;
 
     if (enc_sess->esi_hsk_pairs)
     {
@@ -1002,6 +1068,8 @@ free_handshake_keys (struct enc_sess_iquic *enc_sess)
         }
         free(enc_sess->esi_hsk_pairs);
         enc_sess->esi_hsk_pairs = NULL;
+        for (i = 0; i < N_HSK_PAIRS; ++i)
+            cleanup_hp(&enc_sess->esi_hsk_hps[i]);
         free(enc_sess->esi_hsk_hps);
         enc_sess->esi_hsk_hps = NULL;
     }
@@ -1175,6 +1243,13 @@ iquic_esfi_init_server (enc_session_t *enc_session_p)
     if (!(SSL_set_quic_method(enc_sess->esi_ssl, &cry_quic_method)))
     {
         LSQ_INFO("could not set stream method");
+        return -1;
+    }
+    /* TODO: set to transport parameter string instead of the constant string */
+    if (!SSL_set_quic_early_data_context(enc_sess->esi_ssl,
+                                                (unsigned char *) "lsquic", 6))
+    {
+        LSQ_INFO("could not set early data context");
         return -1;
     }
     maybe_setup_key_logging(enc_sess);
@@ -1756,7 +1831,7 @@ iquic_esfi_destroy (enc_session_t *enc_session_p)
     struct enc_sess_iquic *const enc_sess = enc_session_p;
     struct frab_list *fral;
     LSQ_DEBUG("iquic_esfi_destroy");
-    
+
     for (fral = enc_sess->esi_frals; fral < enc_sess->esi_frals
             + sizeof(enc_sess->esi_frals) / sizeof(enc_sess->esi_frals[0]);
                 ++fral)
@@ -1767,6 +1842,7 @@ iquic_esfi_destroy (enc_session_t *enc_session_p)
         SSL_free(enc_sess->esi_ssl);
 
     free_handshake_keys(enc_sess);
+    cleanup_hp(&enc_sess->esi_hp);
 
     free(enc_sess->esi_zero_rtt_buf);
     free(enc_sess->esi_hostname);
@@ -1804,7 +1880,7 @@ iquic_esf_encrypt_packet (enc_session_t *enc_session_p,
     unsigned char *dst;
     const struct crypto_ctx_pair *pair;
     const struct crypto_ctx *crypto_ctx;
-    const struct header_prot *hp;
+    struct header_prot *hp;
     enum enc_level enc_level;
     unsigned char nonce_buf[ sizeof(crypto_ctx->yk_iv_buf) + 8 ];
     unsigned char *nonce, *begin_xor;
@@ -1887,6 +1963,9 @@ iquic_esf_encrypt_packet (enc_session_t *enc_session_p,
 #endif
     *((uint64_t *) begin_xor) ^= packno;
 
+    /* TODO: have this call return packno_off and packno_len to avoid
+     * another function call.
+     */
     header_sz = lconn->cn_pf->pf_gen_reg_pkt_header(lconn, packet_out, dst,
                                                                         dst_sz);
     if (header_sz < 0)
@@ -1918,7 +1997,6 @@ iquic_esf_encrypt_packet (enc_session_t *enc_session_p,
     const unsigned sample_off = packno_off + 4;
     assert(sample_off + IQUIC_TAG_LEN <= dst_sz);
 #endif
-    apply_hp(enc_sess, hp, dst, packno_off, packno_len);
 
     packet_out->po_enc_data    = dst;
     packet_out->po_enc_data_sz = dst_sz;
@@ -1927,12 +2005,32 @@ iquic_esf_encrypt_packet (enc_session_t *enc_session_p,
     packet_out->po_flags |= PO_ENCRYPTED|PO_SENT_SZ|(ipv6 << POIPv6_SHIFT);
     lsquic_packet_out_set_enc_level(packet_out, enc_level);
     lsquic_packet_out_set_kp(packet_out, enc_sess->esi_key_phase);
+
+    if (enc_level == ENC_LEV_FORW && hp->hp_gen_mask != gen_hp_mask_chacha20)
+        apply_hp_batch(enc_sess, hp, packet_out, packno_off, packno_len);
+    else
+        apply_hp_immediately(enc_sess, hp, packet_out, packno_off, packno_len);
+
     return ENCPA_OK;
 
   err:
     enpub->enp_pmi->pmi_return(enpub->enp_pmi_ctx,
                                 packet_out->po_path->np_peer_ctx, dst, ipv6);
     return ENCPA_BADCRYPT;
+}
+
+
+static void
+iquic_esf_flush_encryption (enc_session_t *enc_session_p)
+{
+    struct enc_sess_iquic *const enc_sess = enc_session_p;
+
+    if (enc_sess->esi_hp_batch_idx)
+    {
+        LSQ_DEBUG("flush header protection application, count: %u",
+            enc_sess->esi_hp_batch_idx);
+        flush_hp_batch(enc_sess);
+    }
 }
 
 
@@ -1957,7 +2055,7 @@ iquic_esf_decrypt_packet (enc_session_t *enc_session_p,
     struct enc_sess_iquic *const enc_sess = enc_session_p;
     unsigned char *dst;
     struct crypto_ctx_pair *pair;
-    const struct header_prot *hp;
+    struct header_prot *hp;
     struct crypto_ctx *crypto_ctx = NULL;
     unsigned char nonce_buf[ sizeof(crypto_ctx->yk_iv_buf) + 8 ];
     unsigned char *nonce, *begin_xor;
@@ -2448,6 +2546,25 @@ const struct enc_session_funcs_common lsquic_enc_session_common_ietf_v1 =
 {
     .esf_encrypt_packet  = iquic_esf_encrypt_packet,
     .esf_decrypt_packet  = iquic_esf_decrypt_packet,
+    .esf_flush_encryption= iquic_esf_flush_encryption,
+    .esf_global_cleanup  = iquic_esf_global_cleanup,
+    .esf_global_init     = iquic_esf_global_init,
+    .esf_tag_len         = IQUIC_TAG_LEN,
+    .esf_get_server_cert_chain
+                         = iquic_esf_get_server_cert_chain,
+    .esf_cipher          = iquic_esf_cipher,
+    .esf_keysize         = iquic_esf_keysize,
+    .esf_alg_keysize     = iquic_esf_alg_keysize,
+    .esf_is_zero_rtt_enabled = iquic_esf_zero_rtt_enabled,
+    .esf_set_conn        = iquic_esf_set_conn,
+};
+
+
+static
+const struct enc_session_funcs_common lsquic_enc_session_common_ietf_v1_no_flush =
+{
+    .esf_encrypt_packet  = iquic_esf_encrypt_packet,
+    .esf_decrypt_packet  = iquic_esf_decrypt_packet,
     .esf_global_cleanup  = iquic_esf_global_cleanup,
     .esf_global_init     = iquic_esf_global_init,
     .esf_tag_len         = IQUIC_TAG_LEN,
@@ -2544,7 +2661,9 @@ set_secret (SSL *ssl, enum ssl_encryption_level_t level,
     int have_alpn;
     const unsigned char *alpn;
     unsigned alpn_len;
+    size_t key_len;
     const enum enc_level enc_level = (enum enc_level) level;
+    unsigned char key[EVP_MAX_KEY_LENGTH];
     char errbuf[ERR_ERROR_STRING_BUF_LEN];
 #define hexbuf errbuf
 
@@ -2593,6 +2712,13 @@ set_secret (SSL *ssl, enum ssl_encryption_level_t level,
         memcpy(enc_sess->esi_traffic_secrets[rw], secret, secret_len);
         enc_sess->esi_md = crypa.md;
         enc_sess->esi_aead = crypa.aead;
+        if (!(hp->hp_flags & (HP_CAN_READ|HP_CAN_WRITE))
+                && crypa.aead == EVP_aead_chacha20_poly1305())
+        {
+            LSQ_DEBUG("turn off header protection batching (chacha not "
+                "supported)");
+            enc_sess->esi_conn->cn_esf_c = &lsquic_enc_session_common_ietf_v1_no_flush;
+        }
     }
     pair->ykp_thresh = IQUIC_INVALID_PACKNO;
 
@@ -2611,25 +2737,36 @@ set_secret (SSL *ssl, enum ssl_encryption_level_t level,
         /* Sanity check that the two sides end up with the same header
          * protection logic, as they should.
          */
-        assert(hp->hp_cipher   == crypa.hp);
         assert(hp->hp_gen_mask == crypa.gen_hp_mask);
     }
     else
     {
         hp->hp_enc_level = enc_level;
-        hp->hp_cipher    = crypa.hp;
         hp->hp_gen_mask  = crypa.gen_hp_mask;
-        hp->hp_sz        = EVP_AEAD_key_length(crypa.aead);
     }
-    lsquic_qhkdf_expand(crypa.md, secret, secret_len, PN_LABEL, PN_LABEL_SZ,
-        hp->hp_buf[rw], hp->hp_sz);
+    key_len = EVP_AEAD_key_length(crypa.aead);
+    if (hp->hp_gen_mask == gen_hp_mask_aes)
+    {
+        lsquic_qhkdf_expand(crypa.md, secret, secret_len, PN_LABEL, PN_LABEL_SZ,
+            key, key_len);
+        EVP_CIPHER_CTX_init(&hp->hp_u.cipher_ctx[rw]);
+        if (!EVP_EncryptInit_ex(&hp->hp_u.cipher_ctx[rw], crypa.hp, NULL, key, 0))
+        {
+            LSQ_ERROR("cannot initialize cipher on level %u", enc_level);
+            goto err;
+        }
+    }
+    else
+        lsquic_qhkdf_expand(crypa.md, secret, secret_len, PN_LABEL, PN_LABEL_SZ,
+            hp->hp_u.buf[rw], key_len);
     hp->hp_flags |= 1 << rw;
 
     if (enc_sess->esi_flags & ESI_LOG_SECRETS)
     {
         log_crypto_ctx(enc_sess, &pair->ykp_ctx[rw], "new", rw);
         LSQ_DEBUG("%s hp: %s", rw2str[rw],
-                                    HEXSTR(hp->hp_buf[rw], hp->hp_sz, hexbuf));
+            HEXSTR(hp->hp_gen_mask == gen_hp_mask_aes ? key : hp->hp_u.buf[rw],
+            key_len, hexbuf));
     }
 
     return 1;
@@ -3004,3 +3141,23 @@ const struct lsquic_stream_if lsquic_mini_cry_sm_if =
 };
 
 
+
+
+const unsigned char *const lsquic_retry_key_buf[N_IETF_RETRY_VERSIONS] =
+{
+    /* [draft-ietf-quic-tls-25] Section 5.8 */
+    (unsigned char *)
+        "\x4d\x32\xec\xdb\x2a\x21\x33\xc8\x41\xe4\x04\x3d\xf2\x7d\x44\x30",
+    /* [draft-ietf-quic-tls-29] Section 5.8 */
+    (unsigned char *)
+        "\xcc\xce\x18\x7e\xd0\x9a\x09\xd0\x57\x28\x15\x5a\x6c\xb9\x6b\xe1",
+};
+
+
+const unsigned char *const lsquic_retry_nonce_buf[N_IETF_RETRY_VERSIONS] =
+{
+    /* [draft-ietf-quic-tls-25] Section 5.8 */
+    (unsigned char *) "\x4d\x16\x11\xd0\x55\x13\xa5\x52\xc5\x87\xd5\x75",
+    /* [draft-ietf-quic-tls-29] Section 5.8 */
+    (unsigned char *) "\xe5\x49\x30\xf9\x7f\x21\x36\xf0\x53\x0a\x8c\x1c",
+};
